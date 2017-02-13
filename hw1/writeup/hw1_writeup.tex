@@ -7,6 +7,7 @@
 \usepackage{moreverb}
 \usepackage{graphicx}
 \usepackage{parskip}
+\usepackage{amsmath}
 \usepackage[toc,page]{appendix}
 
 \usepackage{minted}
@@ -39,7 +40,24 @@ The gathered I-V curves are shown below.
 
 From the DC OP analysis, $V_{th}$ of the NMOS is reported to be 324.4 mV, and the $V_{th}$ of the PMOS is reported to be -208.1 mV. From the model files the NMOS $V_{th}$ is 370 mV, and the PMOS $V_{th}$ is -213 mV.
 
-To extract the threshold voltage from 
+To extract the threshold voltage from the I-V curves, we extrapolate the $V_{GS}$ vs $I_{DS}$ curves for a low value of $V_{DS}$ to keep the transistor in the linear region of operation. Then we fit a linear curve to the points where $V_{GS}: [0.4, 0.6]$ for each $V_{DS}$ curve. We treat the x-intercept of those linear curves as the $V_{th}$ of the transistor for the given value of $V_{DS}$. This method is shown for NMOS and PMOS transistors.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[width=\textwidth+5cm]{images/threshold_voltage.png}}	
+\end{figure}
+
+The images on the left side show the linear fit to each curve, while the images on the right side show the extrapolated $V_{th}$ for each $V_{DS}$ curve. As expected, with increased $V_{DS}$ the threshold voltage improves for both devices. 
+
+The extrapolated results for the NMOS match the model files and the DC operating point measurement well. However, the PMOS threshold voltage is off by around 100 mV.
+
+\section{Fit Velocity Saturation Model}
+In class, we use this model for $I_{DSat}$:
+
+\begin{equation*}
+	I_{DSat} = \frac{W}{L} \frac{\mu_{eff} C_{ox} E_C L}{2} \frac{(V_{GS} - V_{th})^2}{(V_{GS} - V_{th}) + E_C L}
+\end{equation*}
+
+We want to find the values of $E_C L$ that best fit the NMOS and PMOS characteristics. We will use the $V_{th}$ value from the previous section. We take the case of the $V_{DS}$ curve where $V_{DS} = V_{DD}$ to keep the transistors fully saturated and we sweep $V_{GS}$. We then fit our simulation data in saturation where $V_{GS} > V_{th}$ to this model with $E_C L$ and $k'$ as free variables.
 
 \newpage
 \appendix
