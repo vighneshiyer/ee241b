@@ -1,0 +1,7 @@
+_minted*
+*.asv
+*.aux
+*.out
+*.pyg
+*.gz
+*.toc
