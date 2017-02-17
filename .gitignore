@@ -5,3 +5,5 @@ _minted*
 *.pyg
 *.gz
 *.toc
+*.log
+*.log.*
