@@ -7,3 +7,5 @@ _minted*
 *.toc
 *.log
 *.log.*
+*.tr0
+*.ic0@0
