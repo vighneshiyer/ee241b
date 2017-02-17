@@ -30,7 +30,7 @@ We are using a 32nm LP CMOS process for this class. The devices being characteri
 \subsection{Threshold Voltages}
 We want to determine the threshold voltage $V_{th}$ for the NMOS and PMOS devices (for $V_{BS}$ = 0, $L$ = 32nm, and $W$ = 1$\mu$m), by extrapolating from the $I_DS$ vs. $V_{GS}$ curve at low $V_{DS}$. We compare the threshold voltage derived from DC sweeps to the values reported in the model file and the DC operating point analysis.
 
-To perform this characterization, we first collect a full range of DC operating points for both transistors to make analysis easier for this entire section. The transistors' drains are connected to a variable DC supply and the transistors' gates are connected to another independent variable DC supply. The source for both transistors is held at ground (0V). We perform a nested DC analysis by sweeping $V_{DS}$ from $0 \rightarrow 1.05$V in (10mV) increments, and sweep $V_{GS}$ from $0 \rightarrow 1.05$V in (10mV) increments.
+To perform this characterization, we first collect a full range of DC operating points for both transistors to make analysis easier for this entire section. The transistors' drains are connected to a variable DC supply and the transistors' gates are connected to another independent variable DC supply. The source for both transistors is held at ground or VDD (0V/1.5V). We perform a nested DC analysis by sweeping $V_{DS}$ from $0 \rightarrow 1.05$V in (10mV) increments, and sweep $V_{GS}$ from $0 \rightarrow 1.05$V in (10mV) increments.
 
 The gathered I-V curves are shown below.
 
@@ -38,9 +38,9 @@ The gathered I-V curves are shown below.
 	\centerline{\includegraphics[width=\textwidth+5cm]{images/dc_curves.png}}	
 \end{figure}
 
-From the DC OP analysis, $V_{th}$ of the NMOS is reported to be 324.4 mV, and the $V_{th}$ of the PMOS is reported to be -208.1 mV. From the model files the NMOS $V_{th}$ is 370 mV, and the PMOS $V_{th}$ is -213 mV.
+From the DC OP analysis, $V_{th}$ of the NMOS is reported to be 324.4 mV, and the $V_{th}$ of the PMOS is reported to be -208.1 mV. From the model files the NMOS $V_{th0}$ is 370 mV, and the PMOS $V_{th0}$ is -213 mV. However $V_{th0}$ is specified for long-channel devices, which don't accurately model the devices in this process.
 
-To extract the threshold voltage from the I-V curves, we extrapolate the $V_{GS}$ vs $I_{DS}$ curves for a low value of $V_{DS}$ to keep the transistor in the linear region of operation. Then we fit a linear curve to the points where $V_{GS}: [0.4, 0.6]$ for each $V_{DS}$ curve. We treat the x-intercept of those linear curves as the $V_{th}$ of the transistor for the given value of $V_{DS}$. This method is shown for NMOS and PMOS transistors.
+To extract the threshold voltage from the I-V curves, we extrapolate the $V_{GS}$ vs $I_{DS}$ curves for a low value of $V_{DS}$ to keep the transistor in the linear region of operation. Then we fit a line to the linear part of the curves. We treat the x-intercept of those lines as the $V_{th}$ of the transistor for the selected value of $V_{DS}$. This method is shown for NMOS and PMOS transistors.
 
 \begin{figure}[H]
 	\centerline{\includegraphics[width=\textwidth+5cm]{images/threshold_voltage.png}}	
@@ -50,18 +50,26 @@ The images on the left side show the linear fit to each curve, while the images 
 
 The extrapolated results for the NMOS match the model files and the DC operating point measurement well. However, the PMOS threshold voltage is off by around 100 mV.
 
-\section{Fit Velocity Saturation Model}
+\subsection{Fitting Velocity Saturation Model}
 In class, we use this model for $I_{DSat}$:
 
 \begin{equation*}
 	I_{DSat} = \frac{W}{L} \frac{\mu_{eff} C_{ox} E_C L}{2} \frac{(V_{GS} - V_{th})^2}{(V_{GS} - V_{th}) + E_C L}
 \end{equation*}
 
-We want to find the values of $E_C L$ that best fit the NMOS and PMOS characteristics. We will use the $V_{th}$ value from the previous section. We take the case of the $V_{DS}$ curve where $V_{DS} = V_{DD}$ to keep the transistors fully saturated and we sweep $V_{GS}$. We then fit our simulation data in saturation where $V_{GS} > V_{th}$ to this model with $E_C L$ and $k'$ as free variables.
+We want to find the values of $E_C L$ that best fit the NMOS and PMOS I-V curves. We will use the $V_{th}$ value from the previous section. We take the case of the $V_{DS}$ curve where $V_{DS} = V_{DD}$ to keep the transistors fully saturated and we sweep $V_{GS}$. We then fit out data where $V_{GS} > V_{th}$ to this model with $E_C L$ and $k = \mu_{eff} C_{ox}$ as free variables.
 
-To get starting values for fit iteration, I used model parameters to estimate $k'$. $\frac{W}{L} = 31.25$. I found that for the NMOS $\mu_0$ (\verb|u0_n105|) is 30.4, $t_{ox}$ (\verb|toxe_n105|) is 2.39e-9, and $\epsilon_{ox}$ (\verb|epsrox|) is 3.9. For the PMOS $\mu_0$ (\verb|u0_p105|) is 60.95, $t_{ox}$ (\verb|toxe_p105|) is 2.62e-9, and $\epsilon_{ox}$ (\verb|epsrox|) is 3.9. We also know that $C_{ox} = \frac{\epsilon_{ox}}{t_{ox}}$.
+To get starting values for fit iteration, I used model parameters to estimate $k$. $\frac{W}{L} = 31.25$. I found that for the NMOS $\mu_0$ (\verb|u0_n105|) is 30.4, $t_{ox}$ (\verb|toxe_n105|) is 2.39e-9, and $\epsilon_{ox}$ (\verb|epsrox|) is 3.9. For the PMOS $\mu_0$ (\verb|u0_p105|) is 60.95, $t_{ox}$ (\verb|toxe_p105|) is 2.62e-9, and $\epsilon_{ox}$ (\verb|epsrox|) is 3.9. We also know that $C_{ox} = \frac{\epsilon_{ox}}{t_{ox}}$.
 
 Through experimentation, I found that $V_{th}$ from the previous section doesn't match this curve that well since the higher $V_{DS}$ results in a smaller effective threshold voltage. I then made $V_{th}$ another free variable to see if I could get a better fit.
+
+After several iterations, it became clear that small changes in the initial guesses for the free variables resulted in very different curve fits. I settled on values that would give me a realistic $E_C L$ and $k$, but gave me a lower $V_{th}$ than expected.
+
+\subsection{Fitting Alpha-Power Law}
+
+\subsection{Fitting Alpha-Power Law ($\alpha = 1$)}
+
+\section{Transistor Sizing}
 
 \section{5-32 Decoder Design + VLSI Flow}
 
