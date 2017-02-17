@@ -50,6 +50,8 @@ The images on the left side show the linear fit to each curve, while the images 
 
 The extrapolated results for the NMOS match the model files and the DC operating point measurement well. However, the PMOS threshold voltage is off by around 100 mV.
 
+We can clearly see the effect of \textbf{DIBL} (drain induced barrier leakage) which is a result of voltage at the drain lowering the source potential barrier. This causes the $V_{th}$ to drop for higher values of $V_{DS}$. The initial 'increase' in $V_{th}$ for very low values of $V_{DS}$ is likely caused by the slightly worse linear fit that's used to extrapolate $V_{th}$.
+
 \subsection{Fitting Velocity Saturation Model}
 In class, we use this model for $I_{DSat}$:
 
@@ -59,15 +61,41 @@ In class, we use this model for $I_{DSat}$:
 
 We want to find the values of $E_C L$ that best fit the NMOS and PMOS I-V curves. We will use the $V_{th}$ value from the previous section. We take the case of the $V_{DS}$ curve where $V_{DS} = V_{DD}$ to keep the transistors fully saturated and we sweep $V_{GS}$. We then fit out data where $V_{GS} > V_{th}$ to this model with $E_C L$ and $k = \mu_{eff} C_{ox}$ as free variables.
 
-To get starting values for fit iteration, I used model parameters to estimate $k$. $\frac{W}{L} = 31.25$. I found that for the NMOS $\mu_0$ (\verb|u0_n105|) is 30.4, $t_{ox}$ (\verb|toxe_n105|) is 2.39e-9, and $\epsilon_{ox}$ (\verb|epsrox|) is 3.9. For the PMOS $\mu_0$ (\verb|u0_p105|) is 60.95, $t_{ox}$ (\verb|toxe_p105|) is 2.62e-9, and $\epsilon_{ox}$ (\verb|epsrox|) is 3.9. We also know that $C_{ox} = \frac{\epsilon_{ox}}{t_{ox}}$.
+To get starting values for fit iteration, I used model parameters to estimate $k$. I found that for the NMOS $\mu_0$ (\verb|u0_n105|) is 30.4, $t_{ox}$ (\verb|toxe_n105|) is 2.39e-9, and $\epsilon_{ox}$ (\verb|epsrox|) is 3.9. For the PMOS $\mu_0$ (\verb|u0_p105|) is 60.95, $t_{ox}$ (\verb|toxe_p105|) is 2.62e-9, and $\epsilon_{ox}$ (\verb|epsrox|) is 3.9. We also know that $C_{ox} = \frac{\epsilon_{ox}}{t_{ox}}$.
 
 Through experimentation, I found that $V_{th}$ from the previous section doesn't match this curve that well since the higher $V_{DS}$ results in a smaller effective threshold voltage. I then made $V_{th}$ another free variable to see if I could get a better fit.
 
 After several iterations, it became clear that small changes in the initial guesses for the free variables resulted in very different curve fits. I settled on values that would give me a realistic $E_C L$ and $k$, but gave me a lower $V_{th}$ than expected.
 
+\begin{figure}[H]
+	\centerline{\includegraphics[width=\textwidth]{images/idsat_fit.png}}
+\end{figure}
+
+The NMOS fit gave free parameter values of $k = 0.0001, E_C L = 0.4859 \text{ V}, V_{th} = 0.2039 \text{ V}$. The PMOS fit gave values of $k = 0.0001, E_C L = 0.491 \text { V}, V_{th} = -0.2926 \text{ V}$. The threshold voltages are too low for this fit to be an accurate model. If I had additional time, I would have tried modifying the $I_{DSat}$ equation to take into account finite output resistance (FET Early Voltage), by adding a factor of $(1 + \lambda V_{DS})$ and treating $\lambda$ as another free parameter.
+
 \subsection{Fitting Alpha-Power Law}
+We now turn to the alpha-power-law model:
+
+\begin{equation*}
+	I_D = K(V_{GS} - V_{th}) ^ \alpha
+\end{equation*}
+
+This model is accurate when the transistor is in saturation and is presented by the paper "Alpha-Power Law MOSFET Model and its Applications to CMOS Inverter Delay and Other Formulas" by Sakurai and Newton. Using \verb|lsqcurvefit| in MATLAB, we determine the values of $K, V_{th}, \alpha$ that best fit the model.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[width=\textwidth]{images/alpha_power_fit.png}}
+\end{figure}
+
+When fitting, I encountered the same issues from the previous section. Small variations in initial parameter estimates resulted in vastly different fits, and the final iteration produced a reasonable value for $K$ and $\alpha$, but gave a $V_{th}$ that was too low to be realistic.
+
+For the NMOS, $\alpha = 1.183, K = 0.0005, V_{th} = 0.252 \text{ V}$, and for the PMOS $\alpha = 1.178, K = 0.0002, V_{th} = -0.382 \text{ V}$. 
 
 \subsection{Fitting Alpha-Power Law ($\alpha = 1$)}
+Now we fit the same alpha-power law model, but fix $\alpha$ to one to find the best $V_{th}$ that correspond to linear dependence of current on $V_{GS}$.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[width=\textwidth]{images/alpha_power_fit_alpha1.png}}
+\end{figure}
 
 \section{Transistor Sizing}
 
