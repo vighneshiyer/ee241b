@@ -33,4 +33,5 @@ x3 v16out v64out vdd gnd inverter (pmos_width=pmos_width_param, size=64)
 
 .option post=2 nomod
 .option numdgt=6
+.option measdgt=6
 .end
