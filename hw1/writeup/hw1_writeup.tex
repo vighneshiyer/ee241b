@@ -162,6 +162,17 @@ Setting $I_{DSat,inv} = I_{DSat,nand2}$:
 \end{eqnarray}
 
 We now use $V_{GS} = 1.05 \text{ V}$, $E_C L = 485.9 \text{ mV}$, and $V_{th} = 0.2039 \text{ V}$ from problem 1, and we find the width ratio. Another calculation is done using the values provided by the homework spec: $V_{GS} = 1 \text{ V}$, $E_C L = 800 \text{ mV}$, and $V_{th} = 0.5 \text{ V}$, for comparison purposes.
+
+\begin{eqnarray}
+	\frac{W_{nand2}}{W_{inv}} \text{ (my parameters)} = 1.36 \nonumber \\
+	\frac{W_{nand2}}{W_{inv}} \text{ (HW given parameters)} = 1.62 \nonumber
+\end{eqnarray}
+
+To find the optimal NMOS width in SPICE for a high-to-low transition of a NAND2 gate, we use a similar setup to the F04 inverter circuit. We fix one of the inputs to the NAND2 gate at $V_{DD}$ and we let the other input rise from 0 to $V_{DD}$ to cause the gate to transition from high-to-low. We drive the switching gate input with an inverter to shape the input slope and the NAND gate's output drives 2 serially connected inverters which have a fanout of 4 each. Here's my setup; the SPICE sim file is provided in the appendix.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[height=4cm]{images/nmos2_setup.png}}
+\end{figure}
  
 \subsection{CMOS NAND2 Logical Effort and Intrinsic Delay}
 
@@ -332,6 +343,52 @@ x3 v16out v64out vdd gnd inverter (pmos_width=pmos_width_param, size=64)
 * Analyses
 .op
 .tran 1f 200p START=0 SWEEP pmos_width_param 100n 200n .1n
+
+.option post=2 nomod
+.option accurate=1
+.option numdgt=6
+.option measdgt=6
+.option delmax=10f
+.end
+\end{minted}
+
+\section{F04 Inverter Delay vs Fanout SPICE Sim}
+\begin{minted}{text}
+Connecting a DUT inverter with f04 configuration, and sweeping fanout of its loading stage.
+
+.lib '/home/ff/ee241/synopsys-32nm/hspice/saed32nm.lib' TT
+
+* Inverter Subcircuit
+
+.subckt inverter in out vdd gnd (pmos_width=121n, size=1)
+* MOSFET instantiation: x<name> <drain> <gate> <source> <body> <model> <parameter list>
+x1 out in gnd gnd n105 (w=100n*size l=32n)
+x2 out in vdd vdd p105 (w=pmos_width*size l=32n)
+.ends
+
+* Test Circuit
+
+* This is fixed
+.param pmos_width_param = 121n
+* DUT fanout
+.param fanout = 4
+vdd vdd gnd 1.05
+vin vin gnd pwl(0 0 10p 0 20p 1.05 1n 1.05 1.01n 0)
+
+x1 vin v1out vdd gnd inverter (pmos_width=pmos_width_param, size=1)
+xdut v1out v4out vdd gnd inverter (pmos_width=pmos_width_param, size=4)
+x2 v4out v16out vdd gnd inverter (pmos_width=pmos_width_param, size=4*fanout)
+x3 v16out v64out vdd gnd inverter (pmos_width=pmos_width_param, size=16*fanout)
+
+* Measurements
+* We want to measure the time at which v1out has fallen to 1.05V/2
+* v4out has risen to 1.05/2, v1out has risen to 1.05/2, v4out has risen to 1.05/2
+.measure tran delay_l_to_h trig v(v1out) val=1.05/2 rise=1 targ v(v4out) val=1.05/2 fall=1
+.measure tran delay_h_to_l trig v(v1out) val=1.05/2 fall=1 targ v(v4out) val=1.05/2 rise=1
+
+* Analyses
+.op
+.tran 10p 1.2n START=0 SWEEP fanout 1 128 1
 
 .option post=2 nomod
 .option accurate=1
