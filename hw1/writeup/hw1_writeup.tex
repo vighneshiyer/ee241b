@@ -187,7 +187,47 @@ We recall the following equation from 151:
 	t_{p,gate} = t_{inv}(p + LE \cdot f)
 \end{equation*}
 
-We want to find the intrinsic delay and logical effort of the optimally sized NAND2 gate with a high-to-low delay that matches the that of the inverter. We normalize $p$ to $p_{inv} = \gamma$, which was derived earlier. We gather data in a similar fashion by sweeping the fanout of the NAND gate and observing its delay for both low-to-high and high-to-low gate transitions. We then fit the propagation delay equation with free parameters $t_{inv}$ (the intrinsic NAND2 delay multiplied by $t_{inv}$ of an inverter) and $LE$ (the logical effort of the NAND2). Everything is normalized to the optimal, minimal inverter.
+We want to find the intrinsic delay and logical effort of the optimally sized NAND2 gate with a high-to-low delay that matches the that of the inverter. We gather data in a similar fashion by sweeping the fanout of the NAND gate and observing its delay for both low-to-high and high-to-low gate transitions. We then fit the propagation delay equation with free parameters $p$ (the intrinsic NAND2 delay normalized to $p_{inv} = \gamma$ of an inverter) and $LE$ (the logical effort of the NAND2).
+
+\begin{figure}[H]
+	\centerline{\includegraphics[width=\textwidth+2cm]{images/nand2_delay_vs_fanout.png}}
+\end{figure}
+
+We get an intrinsic delay of 6.19 and a logical effort of 1.132, which is lower than hypothesized with a naive model.
+
+\subsection{Optimally Sizing a NAND3 Gate}
+We repeat what we did in the previous section by hand calculating the ideal width of the NAND3 NMOS pull-down network transistor stack to equalize it's pull-down strength to that of an inverter.
+
+Setting $I_{DSat,inv} = I_{DSat,nand3}$:
+
+\begin{eqnarray}
+\frac{W_{inv}}{W_{nand3}} = \frac{(V_{GS} - V_{th}) + E_C L}{(V_{GS} - V_{th}) + 3 \cdot E_C L} \nonumber
+\end{eqnarray}
+
+We now use $V_{GS} = 1.05 \text{ V}$, $E_C L = 485.9 \text{ mV}$, and $V_{th} = 0.2039 \text{ V}$ from problem 1, and we find the width ratio. Another calculation is done using the values provided by the homework spec: $V_{GS} = 1 \text{ V}$, $E_C L = 800 \text{ mV}$, and $V_{th} = 0.5 \text{ V}$, for comparison purposes.
+
+\begin{eqnarray}
+\frac{W_{nand3}}{W_{inv}} \text{ (my parameters)} = 1.73 \nonumber \\
+\frac{W_{nand3}}{W_{inv}} \text{ (HW given parameters)} = 2.23 \nonumber
+\end{eqnarray}
+
+Sweeping the NMOS widths and measuring the high-to-low propagation delays, gives us this plot.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[height=6cm]{images/nand3_delay_vs_width.png}}
+\end{figure}
+
+We can see that as transistor stacks exceed 2, the increased width required to make those stacks pull as effectively as a single transistor of minimum length increases rapidly. In this case, for a NAND3 gate to have a pull-down strength equal to that of an inverter, the \textbf{NMOS width needs to be 672nm.}
+
+Now we repeat the previous analysis to find the logical effort of this NAND3 gate.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[height=6cm]{images/nand3_delay_vs_fanout.png}}
+\end{figure}
+
+The intrinsic delay is 11.93 and the logical effort is 1.26.
+
+\subsection{NOR2 Gate Sizing for PMOS Pullup Strength}
 
 \section{5-32 Decoder Design + VLSI Flow}
 
