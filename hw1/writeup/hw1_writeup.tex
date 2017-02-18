@@ -187,7 +187,7 @@ We recall the following equation from 151:
 	t_{p,gate} = t_{inv}(p + LE \cdot f)
 \end{equation*}
 
-We want to find the intrinsic delay and logical effort of the optimally sized NAND2 gate with a high-to-low delay that matches the that of the inverter. We normalize $p$ to $p_{inv} = \gamma$, which was derived earlier. We gather data in a similar fashion by sweeping the fanout of the NAND gate and observing its delay
+We want to find the intrinsic delay and logical effort of the optimally sized NAND2 gate with a high-to-low delay that matches the that of the inverter. We normalize $p$ to $p_{inv} = \gamma$, which was derived earlier. We gather data in a similar fashion by sweeping the fanout of the NAND gate and observing its delay for both low-to-high and high-to-low gate transitions. We then fit the propagation delay equation with free parameters $t_{inv}$ (the intrinsic NAND2 delay multiplied by $t_{inv}$ of an inverter) and $LE$ (the logical effort of the NAND2). Everything is normalized to the optimal, minimal inverter.
 
 \section{5-32 Decoder Design + VLSI Flow}
 
