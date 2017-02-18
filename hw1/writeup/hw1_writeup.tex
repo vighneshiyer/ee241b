@@ -181,7 +181,13 @@ To find the optimal NMOS width in SPICE for a high-to-low transition of a NAND2 
 We observe that the optimal NMOS width to match the pull-down strength of an inverter that's equivalently sized is significantly larger than the predicted 200nm. \textbf{The ideal width is around 252nm for the NMOS} with a 100nm width for the PMOS. This is due to the transistor stack which worsens each transistors' equivalent resistance.
  
 \subsection{CMOS NAND2 Logical Effort and Intrinsic Delay}
+We recall the following equation from 151:
 
+\begin{equation*}
+	t_{p,gate} = t_{inv}(p + LE \cdot f)
+\end{equation*}
+
+We want to find the intrinsic delay and logical effort of the optimally sized NAND2 gate with a high-to-low delay that matches the that of the inverter. We normalize $p$ to $p_{inv} = \gamma$, which was derived earlier. We gather data in a similar fashion by sweeping the fanout of the NAND gate and observing its delay for both low-to-high and high-to-low gate transitions. We then fit the propagation delay equation with free parameters $t_{inv}$ (the intrinsic NAND2 delay multiplied by $t_{inv}$ of an inverter) and $LE$ (the logical effort of the NAND2). Everything is normalized to the optimal, minimal inverter.
 
 \section{5-32 Decoder Design + VLSI Flow}
 
