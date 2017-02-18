@@ -97,7 +97,74 @@ Now we fit the same alpha-power law model, but fix $\alpha$ to one to find the b
 	\centerline{\includegraphics[width=\textwidth]{images/alpha_power_fit_alpha1.png}}
 \end{figure}
 
+These fits are fairly accurate when the transistor is deep in saturation. For the NMOS, $K = 0.0005, V_{th} = 0.3039 \text{ V}$, and for the PMOS, $K = 0.0004, V_{th} = -0.3782 \text{ V}$.
+
 \section{Transistor Sizing}
+
+\subsection{Find Ideal Ratio of PMOS/NMOS Widths for a CMOS Inverter}
+Using SPICE and the 32nm LP model with a 1.05V supply, we find the optimal width of the PMOS transistor that minimizes the propagation delay ($t_{p} = (t_{pHL} + t_{pLH}) / 2)$ for a CMOS inverter. We fix the NMOS transistor width at 100nm and the lengths of both transistors are fixed at the process' 32nm minimum.
+
+In order to solve this problem with simulation, I used the F04 (fanout of 4) method of inverter delay characterization. I designed a simulation based on the paper "The Fanout-of-4 Inverter Delay Metric" by Harris, Horowitz, et al. The circuit setup from the paper is shown below.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[height=7cm]{images/f04_figure.png}}
+\end{figure}
+
+The first inverter is designed to take the PWL/PULSE input voltage from SPICE and shape it into a realistic inverter output slope for the DUT. The inverter after the DUT provides the fanout of 4 load for the DUT. The final inverter slows the switching time of the third inverter, which prevents large Miller multiplication of the third inverter's $C_{gd}$.
+
+I swept the width of the PMOS from 100n to 200n while performing transient simulations. I measured the propagation delays (high-to-low and low-to-high) using '.measure' statements in SPICE. Propagation delay was measured from 50\% of the input to 50\% of the output. The SPICE file is provided in the appendix. The results are summarized below:
+
+\begin{figure}[H]
+	\centerline{\includegraphics[height=7cm]{images/inverter_delay.png}}
+\end{figure}
+
+We find that the average propagation delay $t_p$ is minimized when the PMOS width is 121nm and the minimal delay is 12.4560 ps. The PMOS width that results in an equal low-to-high and high-to-low delay is 192.3nm and the equal delay is 12.96 ps. In conclusion, for the instructions in this part:
+
+\begin{eqnarray}
+	W_{pmos,optimal} = 121 \text{ nm for } W_{nmos} = 100 \text{ nm} \nonumber \\
+	t_{p,optimal} = 12.4560 \text{ ps} \nonumber
+\end{eqnarray}
+
+\subsection{Find Optimal Inverter's Intrinsic Delay $p$}
+Our next goal is to find the intrinsic delay $p$ of this optimally sized CMOS inverter. It is set 'naturally' by the ratio of diffusion to gate capacitances, but in this case we will find it using delay measurements.
+
+We use the equation given in 151:
+
+\begin{eqnarray}
+	t_p = t_{inv} (\gamma + f) \nonumber
+\end{eqnarray}
+
+where $t_p$ is the delay through an inverter, $t_{inv}$ is a technology constant that represents the intrinsic delay of a minimum sized inverter, $\gamma$ is a process constant that describes the ratio between drain and gate capacitances, and $f$ is the fanout of the inverter. The goal is to derive $\gamma$ and $t_{inv}$ from simulations.
+
+We use a similar setup from the previous section, except that the PMOS width is fixed at the optimal value and instead the size of the stage after the DUT is swept. The inverter before the DUT is minimally sized for input slope shaping, and the inverter after the DUT's load is 4x upsized from the variable load size.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[width=\textwidth+2cm]{images/inverter_delay_vs_fanout.png}}
+\end{figure}
+
+We find that the best fit is given by $\gamma = 1.1011$ and $t_{inv} = 1.8478 \text{ ps}$.
+
+\subsection{Optimal CMOS NAND2 Sizing}
+We want to find the required width $W_{nmos}$ for the NMOS transistors in the pull-down network such that the equivalent resistance of the pull down network is the same as the equivalent resistance in an inverter from part a). Use hand analysis with parameters ($E_C L, V_{DD}, V_{th}$) from problem 1. We then compare the results to SPICE simulations.
+
+We utilize the velocity saturated current model for a MOSFET and set the current of the NMOS pull-down network of the NAND2 gate equal to the current of the pull-down NMOS of the inverter for equal drive strength. We model the NAND pull-down network as 1 transistor of twice the minimum length (32nm * 2 = 64nm), and we find the optimal width.
+
+\begin{eqnarray}
+	I_{DSat} = \frac{W}{L} \frac{\mu_{eff} C_{ox} E_C L}{2} \frac{(V_{GS} - V_{th})^2}{(V_{GS} - V_{th}) + E_C L} \nonumber \\
+	I_{DSat,inv} = \frac{W_{inv}}{L} \frac{\mu_{eff} C_{ox} E_C L}{2} \frac{(V_{GS} - V_{th})^2}{(V_{GS} - V_{th}) + E_C L} \nonumber \\
+	I_{DSat,nand2} = \frac{W_{nand2}}{2 \cdot L} \frac{\mu_{eff} C_{ox} E_C 2 \cdot L}{2} \frac{(V_{GS} - V_{th})^2}{(V_{GS} - V_{th}) + E_C 2 \cdot L} \nonumber
+\end{eqnarray}
+
+Setting $I_{DSat,inv} = I_{DSat,nand2}$:
+
+\begin{eqnarray}
+	\frac{W_{inv}}{W_{nand2}} = \frac{(V_{GS} - V_{th}) + E_C L}{(V_{GS} - V_{th}) + 2 \cdot E_C L} \nonumber
+\end{eqnarray}
+
+We now use $V_{GS} = 1.05 \text{ V}$, $E_C L = 485.9 \text{ mV}$, and $V_{th} = 0.2039 \text{ V}$ from problem 1, and we find the width ratio. Another calculation is done using the values provided by the homework spec: $V_{GS} = 1 \text{ V}$, $E_C L = 800 \text{ mV}$, and $V_{th} = 0.5 \text{ V}$, for comparison purposes.
+ 
+\subsection{CMOS NAND2 Logical Effort and Intrinsic Delay}
+
 
 \section{5-32 Decoder Design + VLSI Flow}
 
@@ -186,7 +253,7 @@ module decoder(
 endmodule
 \end{minted}
 
-I had to modify the `timescale in the \verb|decoder_tb| to be 1ns/10ps to match the vcd invocation and to ensure that a small clock period under 100ps would simulate without issues. The behavioral simulation succeeded.
+I had to modify the `timescale in the \verb|decoder_tb| to be 1ns/10ps to match the vcs invocation and to ensure that a small clock period under 100ps would simulate without issues. The behavioral simulation succeeded.
 
 After running \verb|dc-syn|, I found that there were timing violations, and I fixed those by increasing the clock period to 0.2ns. After this, I re-ran synthesis, verified that there were no timing violations, and ran the post-synthesis VCS sim to make sure the functionality of the decoder was still in order.
 
@@ -198,14 +265,27 @@ Here are the final results:
 
 \begin{enumerate}
 	\item A screenshot of the layout
+	
+	\begin{figure}[H]
+		\centerline{\includegraphics[width=\textwidth+2cm]{images/icc_chip_image.png}}
+	\end{figure}
+
 	\item Critical path in ns
+	
+	The critical path is 0.3910 ns and it starts at \verb|Z_reg_31_| and ends at \verb|Z[31]|. There is no negative slack on any path.
+	
 	\item Post-PAR DVE sim showing correct functionality and critical path
+	
+	\begin{figure}[H]
+		\centerline{\includegraphics[width=\textwidth+2cm]{images/success_vcs_run.png}}
+	\end{figure}
 \end{enumerate}
+
 \newpage
 \appendix
 \section{PMOS/NMOS DC Characterization SPICE Sim} \label{dc_characterization_spice}
 \begin{minted}{text}
-Sweep of V_GS with constant V_DS for N-MOSFET
+Sweep of V_GS with constant V_DS for N-MOSFET, similar file for P-MOSFET
 .lib '/home/ff/ee241/synopsys-32nm/hspice/saed32nm.lib' TT
 vds vds gnd 1.05
 vgs vgs gnd 1.05 
@@ -218,6 +298,158 @@ x1 vds vgs gnd gnd n105 (w=1u l=32n)
 .end
 \end{minted}
 
-\section{}
+\section{F04 Inverter PMOS Width Sweep SPICE Sim}
+\begin{minted}{text}
+Connecting a DUT inverter with f04 configuration
+
+.lib '/home/ff/ee241/synopsys-32nm/hspice/saed32nm.lib' TT
+
+* Inverter Subcircuit
+
+.subckt inverter in out vdd gnd (pmos_width=200n, size=1)
+* MOSFET instantiation: x<name> <drain> <gate> <source> <body> <model> <parameter list>
+x1 out in gnd gnd n105 (w=100n*size l=32n)
+x2 out in vdd vdd p105 (w=pmos_width*size l=32n)
+.ends
+
+* Test Circuit
+
+.param pmos_width_param = 100n
+vdd vdd gnd 1.05
+vin vin gnd pwl(0 0 10p 0 20p 1.05 100p 1.05 110p 0)
+
+x1 vin v1out vdd gnd inverter (pmos_width=pmos_width_param, size=1)
+xdut v1out v4out vdd gnd inverter (pmos_width=pmos_width_param, size=4)
+x2 v4out v16out vdd gnd inverter (pmos_width=pmos_width_param, size=16)
+x3 v16out v64out vdd gnd inverter (pmos_width=pmos_width_param, size=64)
+
+* Measurements
+* We want to measure the time at which v1out has fallen to 1.05V/2
+* v4out has risen to 1.05/2, v1out has risen to 1.05/2, v4out has risen to 1.05/2
+.measure tran delay_l_to_h trig v(v1out) val=1.05/2 rise=1 targ v(v4out) val=1.05/2 fall=1
+.measure tran delay_h_to_l trig v(v1out) val=1.05/2 fall=1 targ v(v4out) val=1.05/2 rise=1
+
+* Analyses
+.op
+.tran 1f 200p START=0 SWEEP pmos_width_param 100n 200n .1n
+
+.option post=2 nomod
+.option accurate=1
+.option numdgt=6
+.option measdgt=6
+.option delmax=10f
+.end
+\end{minted}
+
+\section{Decoder Post-PAR VCS Run Printout}
+\begin{minted}{text}
+VCD+ Writer G-2012.09_Full64 Copyright (c) 1991-2012 by Synopsys Inc.
+0: A= 0, Z=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx, cycle=          0
+1: A= 0, Z=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1, cycle=          0
+1: A= 0, Z=x0xxxxx00x00x0xx0xx000x0xxx0x001, cycle=          0
+1: A= 0, Z=x0xxx0x00x00x0xx000000x0xxx0x001, cycle=          0
+1: A= 0, Z=x0xxx0x00000x000000000x0xxx0x001, cycle=          0
+1: A= 0, Z=x0xxx0x00000x00000000000xx000001, cycle=          0
+1: A= 0, Z=x000x0000000x0000000000000000001, cycle=          0
+1: A= 0, Z=x00000000000x0000000000000000001, cycle=          0
+1: A= 0, Z=x0000000000000000000000000000001, cycle=          0
+1: A= 0, Z=00000000000000000000000000000001, cycle=          0
+2: A= 1, Z=00000000000000000000000000000001, cycle=          1
+3: A= 1, Z=00000000000000000000000000000011, cycle=          1
+3: A= 1, Z=00000000000000000000000000000010, cycle=          1
+3: A= 2, Z=00000000000000000000000000000010, cycle=          2
+4: A= 2, Z=00000000000000000000000000000110, cycle=          2
+4: A= 2, Z=00000000000000000000000000000100, cycle=          2
+4: A= 3, Z=00000000000000000000000000000100, cycle=          3
+5: A= 3, Z=00000000000000000000000000000000, cycle=          3
+5: A= 3, Z=00000000000000000000000000001000, cycle=          3
+5: A= 4, Z=00000000000000000000000000001000, cycle=          4
+6: A= 4, Z=00000000000000000000000000011000, cycle=          4
+6: A= 4, Z=00000000000000000000000000010000, cycle=          4
+6: A= 5, Z=00000000000000000000000000010000, cycle=          5
+7: A= 5, Z=00000000000000000000000000000000, cycle=          5
+7: A= 5, Z=00000000000000000000000000100000, cycle=          5
+7: A= 6, Z=00000000000000000000000000100000, cycle=          6
+8: A= 6, Z=00000000000000000000000000000000, cycle=          6
+8: A= 6, Z=00000000000000000000000001000000, cycle=          6
+8: A= 7, Z=00000000000000000000000001000000, cycle=          7
+9: A= 7, Z=00000000000000000000000011000000, cycle=          7
+9: A= 7, Z=00000000000000000000000010000000, cycle=          7
+9: A= 8, Z=00000000000000000000000010000000, cycle=          8
+10: A= 8, Z=00000000000000000000000110000000, cycle=          8
+10: A= 8, Z=00000000000000000000000100000000, cycle=          8
+10: A= 9, Z=00000000000000000000000100000000, cycle=          9
+11: A= 9, Z=00000000000000000000000000000000, cycle=          9
+11: A= 9, Z=00000000000000000000001000000000, cycle=          9
+11: A=10, Z=00000000000000000000001000000000, cycle=         10
+12: A=10, Z=00000000000000000000011000000000, cycle=         10
+12: A=10, Z=00000000000000000000010000000000, cycle=         10
+12: A=11, Z=00000000000000000000010000000000, cycle=         11
+13: A=11, Z=00000000000000000000110000000000, cycle=         11
+13: A=11, Z=00000000000000000000100000000000, cycle=         11
+13: A=12, Z=00000000000000000000100000000000, cycle=         12
+14: A=12, Z=00000000000000000001100000000000, cycle=         12
+14: A=12, Z=00000000000000000001000000000000, cycle=         12
+14: A=13, Z=00000000000000000001000000000000, cycle=         13
+15: A=13, Z=00000000000000000010000000000000, cycle=         13
+15: A=14, Z=00000000000000000010000000000000, cycle=         14
+16: A=14, Z=00000000000000000110000000000000, cycle=         14
+16: A=14, Z=00000000000000000100000000000000, cycle=         14
+16: A=15, Z=00000000000000000100000000000000, cycle=         15
+17: A=15, Z=00000000000000001100000000000000, cycle=         15
+17: A=15, Z=00000000000000001000000000000000, cycle=         15
+17: A=16, Z=00000000000000001000000000000000, cycle=         16
+18: A=16, Z=00000000000000000000000000000000, cycle=         16
+18: A=16, Z=00000000000000010000000000000000, cycle=         16
+18: A=17, Z=00000000000000010000000000000000, cycle=         17
+19: A=17, Z=00000000000000110000000000000000, cycle=         17
+19: A=17, Z=00000000000000100000000000000000, cycle=         17
+19: A=18, Z=00000000000000100000000000000000, cycle=         18
+20: A=18, Z=00000000000001100000000000000000, cycle=         18
+20: A=18, Z=00000000000001000000000000000000, cycle=         18
+20: A=19, Z=00000000000001000000000000000000, cycle=         19
+21: A=19, Z=00000000000000000000000000000000, cycle=         19
+21: A=19, Z=00000000000010000000000000000000, cycle=         19
+21: A=20, Z=00000000000010000000000000000000, cycle=         20
+22: A=20, Z=00000000000110000000000000000000, cycle=         20
+22: A=20, Z=00000000000100000000000000000000, cycle=         20
+22: A=21, Z=00000000000100000000000000000000, cycle=         21
+23: A=21, Z=00000000001100000000000000000000, cycle=         21
+23: A=21, Z=00000000001000000000000000000000, cycle=         21
+23: A=22, Z=00000000001000000000000000000000, cycle=         22
+24: A=22, Z=00000000000000000000000000000000, cycle=         22
+24: A=22, Z=00000000010000000000000000000000, cycle=         22
+24: A=23, Z=00000000010000000000000000000000, cycle=         23
+25: A=23, Z=00000000110000000000000000000000, cycle=         23
+25: A=23, Z=00000000100000000000000000000000, cycle=         23
+25: A=24, Z=00000000100000000000000000000000, cycle=         24
+26: A=24, Z=00000001000000000000000000000000, cycle=         24
+26: A=25, Z=00000001000000000000000000000000, cycle=         25
+27: A=25, Z=00000000000000000000000000000000, cycle=         25
+27: A=25, Z=00000010000000000000000000000000, cycle=         25
+27: A=26, Z=00000010000000000000000000000000, cycle=         26
+28: A=26, Z=00000110000000000000000000000000, cycle=         26
+28: A=26, Z=00000100000000000000000000000000, cycle=         26
+28: A=27, Z=00000100000000000000000000000000, cycle=         27
+29: A=27, Z=00000000000000000000000000000000, cycle=         27
+29: A=27, Z=00001000000000000000000000000000, cycle=         27
+29: A=28, Z=00001000000000000000000000000000, cycle=         28
+30: A=28, Z=00011000000000000000000000000000, cycle=         28
+30: A=28, Z=00010000000000000000000000000000, cycle=         28
+30: A=29, Z=00010000000000000000000000000000, cycle=         29
+31: A=29, Z=00110000000000000000000000000000, cycle=         29
+31: A=29, Z=00100000000000000000000000000000, cycle=         29
+31: A=30, Z=00100000000000000000000000000000, cycle=         30
+32: A=30, Z=01100000000000000000000000000000, cycle=         30
+32: A=30, Z=01000000000000000000000000000000, cycle=         30
+32: A=31, Z=01000000000000000000000000000000, cycle=         31
+33: A=31, Z=00000000000000000000000000000000, cycle=         31
+33: A=31, Z=10000000000000000000000000000000, cycle=         31
+**Ran through all test vectors**
+$finish called from file "../../src/decoder_tb.v", line 31.
+$finish at simulation time                33000
+V C S   S i m u l a t i o n   R e p o r t
+Time: 33000 ps
+\end{minted}
 
 \end{document}
