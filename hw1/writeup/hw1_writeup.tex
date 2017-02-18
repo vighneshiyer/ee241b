@@ -168,11 +168,17 @@ We now use $V_{GS} = 1.05 \text{ V}$, $E_C L = 485.9 \text{ mV}$, and $V_{th} = 
 	\frac{W_{nand2}}{W_{inv}} \text{ (HW given parameters)} = 1.62 \nonumber
 \end{eqnarray}
 
-To find the optimal NMOS width in SPICE for a high-to-low transition of a NAND2 gate, we use a similar setup to the F04 inverter circuit. We fix one of the inputs to the NAND2 gate at $V_{DD}$ and we let the other input rise from 0 to $V_{DD}$ to cause the gate to transition from high-to-low. We drive the switching gate input with an inverter to shape the input slope and the NAND gate's output drives 2 serially connected inverters which have a fanout of 4 each. Here's my setup; the SPICE sim file is provided in the appendix.
+To find the optimal NMOS width in SPICE for a high-to-low transition of a NAND2 gate, we use a similar setup to the F04 inverter circuit. We fix one of the inputs to the NAND2 gate at $V_{DD}$ and we let the other input rise from 0 to $V_{DD}$ to cause the gate to transition from high-to-low. We drive the switching gate input with an inverter to shape the input slope and the NAND gate's output drives 2 serially connected inverters which have a fanout of 4 each. Here's my setup; the SPICE sim file is provided in the appendix. I held the top NMOS transistor at $V_{DD}$ and I switched the bottom NMOS transistor to give the worst-case high-to-low transition.
 
 \begin{figure}[H]
-	\centerline{\includegraphics[height=4cm]{images/nmos2_setup.png}}
+	\centerline{\includegraphics[height=3cm]{images/nmos2_setup.png}}
 \end{figure}
+
+\begin{figure}[H]
+	\centerline{\includegraphics[height=6cm]{images/nand2_delay_vs_width.png}}
+\end{figure}
+
+We observe that the optimal NMOS width to match the pull-down strength of an inverter that's equivalently sized is significantly larger than the predicted 200nm. \textbf{The ideal width is around 252nm for the NMOS} with a 100nm width for the PMOS. This is due to the transistor stack which worsens each transistors' equivalent resistance.
  
 \subsection{CMOS NAND2 Logical Effort and Intrinsic Delay}
 

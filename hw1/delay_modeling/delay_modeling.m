@@ -67,3 +67,32 @@ prop_delay_fn = @(params, data)params(1) .* (params(2) + data);
 inverter_intrinsic_params = lsqcurvefit(prop_delay_fn, [10, 1.1], fanout, avg_prop_delay);
 plot(fanout, prop_delay_fn(inverter_intrinsic_params, fanout));
 legend('Low-to-High Delay', 'High-to-Low Delay', 'Avg Propagation Delay', 'Prop Delay Fn Fit');
+
+%%
+nand_delay_file = fopen('nand2_width_data.txt');
+
+nand_delay_data = [];
+tline = fgets(nand_delay_file);
+while ischar(tline)
+    line_split = strsplit(tline);
+    line_size = size(line_split);
+    if (line_size(2) == 6)
+        nand_delay_data = cat(1, nand_delay_data, line_split(2:3));
+    end
+    tline = fgets(nand_delay_file);
+end
+fclose(nand_delay_file);
+
+nmos_width = str2double(nand_delay_data(:,1)) / 1e-9;
+high_to_low_delay = str2double(nand_delay_data(:,2)) / 1e-12;
+plot(nmos_width, high_to_low_delay);
+hold on
+xlabel('NMOS Width (nm)', 'Interpreter', 'Latex');
+ylabel('Delay (ps)', 'Interpreter', 'Latex');
+title('High-to-Low Delay of NAND2 Gate vs. NMOS Stack Width')
+% 13.61 ps is the inverter high-to-low delay at optimal sizing, add a line
+% there
+hline = refline([0 13.61]);
+hline.Color = 'r';
+set(hline,'LineStyle',':');
+text(205,13.7,'H-L Delay of Optimal Inverter')
