@@ -228,6 +228,21 @@ Now we repeat the previous analysis to find the logical effort of this NAND3 gat
 The intrinsic delay is 11.93 and the logical effort is 1.26.
 
 \subsection{NOR2 Gate Sizing for PMOS Pullup Strength}
+We now turn to a CMOS NOR2 gate which has a PMOS transistor stack on the pull-up network. We want to size this gate to have a low-to-high delay as our inverter. Let's begin by sweeping the PMOS width to equalize the rising delay to that of the optimally sized inverter.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[height=6cm]{images/nor2_delay_vs_width.png}}
+\end{figure}
+
+To match the low-to-high delay of an optimal inverter of 11.3ps, the width of the PMOS transistors for a NOR2 gate need to be 1296nm wide. This is much wider than necessary for making NAND2 gates with inverter-like delay.
+
+Now, we can sweep fanout and plot gate to get the intrinsic delay and logical effort of the NOR2.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[width=\textwidth+4cm]{images/nor2_delay_vs_fanout.png}}
+\end{figure}
+
+We get an intrinsic delay of 14.89 and a logical effort of 1.8.
 
 \section{5-32 Decoder Design + VLSI Flow}
 
