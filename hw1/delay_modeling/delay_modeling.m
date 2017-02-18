@@ -96,3 +96,105 @@ hline = refline([0 13.61]);
 hline.Color = 'r';
 set(hline,'LineStyle',':');
 text(205,13.7,'H-L Delay of Optimal Inverter')
+
+%% delay vs fanout of NAND gate for LE and p
+nand_delay_vs_fanout = fopen('nand2_delay_vs_fanout.mt0');
+
+nand_delay_vs_fanout_data = [];
+tline = fgets(nand_delay_vs_fanout);
+while ischar(tline)
+    line_split = strsplit(tline);
+    line_size = size(line_split);
+    if (line_size(2) == 6)
+        nand_delay_vs_fanout_data = cat(1, nand_delay_vs_fanout_data, line_split(2:4));
+    end
+    tline = fgets(nand_delay_vs_fanout);
+end
+fclose(nand_delay_vs_fanout);
+
+fanout = str2double(nand_delay_vs_fanout_data(2:end,1));
+low_to_high_delay = str2double(nand_delay_vs_fanout_data(2:end,2)) / 1e-12;
+high_to_low_delay = str2double(nand_delay_vs_fanout_data(2:end,3)) / 1e-12;
+avg_prop_delay = (low_to_high_delay + high_to_low_delay)/2;
+plot(fanout, low_to_high_delay);
+hold on
+plot(fanout, high_to_low_delay);
+plot(fanout, avg_prop_delay);
+xlabel('Fanout', 'Interpreter', 'Latex');
+ylabel('Delay (ps)', 'Interpreter', 'Latex');
+title('Propagation Delay of a NAND2 with Increasing Fanout')
+
+% now let's fit a curve
+% params(1) = p
+% params(2) = LE
+% t_p,gate = t_inv(p + LE*f) where f is fanout
+prop_delay_fn = @(params, data)1.8478 * (params(1) + params(2) .* data);
+nand2_intrinsic_params = lsqcurvefit(prop_delay_fn, [1, 5/3], fanout, avg_prop_delay);
+plot(fanout, prop_delay_fn(nand2_intrinsic_params, fanout));
+legend('Low-to-High Delay', 'High-to-Low Delay', 'Avg Propagation Delay', 'Prop Delay Fn Fit');
+
+%%
+nand_delay_file = fopen('nand3_width_optim.mt0');
+
+nand_delay_data = [];
+tline = fgets(nand_delay_file);
+while ischar(tline)
+    line_split = strsplit(tline);
+    line_size = size(line_split);
+    if (line_size(2) == 6)
+        nand_delay_data = cat(1, nand_delay_data, line_split(2:3));
+    end
+    tline = fgets(nand_delay_file);
+end
+fclose(nand_delay_file);
+
+nmos_width = str2double(nand_delay_data(:,1)) / 1e-9;
+high_to_low_delay = str2double(nand_delay_data(:,2)) / 1e-12;
+plot(nmos_width, high_to_low_delay);
+hold on
+xlabel('NMOS Width (nm)', 'Interpreter', 'Latex');
+ylabel('Delay (ps)', 'Interpreter', 'Latex');
+title('High-to-Low Delay of NAND3 Gate vs. NMOS Stack Width')
+% 13.61 ps is the inverter high-to-low delay at optimal sizing, add a line
+% there
+hline = refline([0 13.61]);
+hline.Color = 'r';
+set(hline,'LineStyle',':');
+text(605,13.7,'H-L Delay of Optimal Inverter')
+
+%%
+%% delay vs fanout of NAND gate for LE and p
+nand_delay_vs_fanout = fopen('nand3_delay_vs_fanout.mt0');
+
+nand_delay_vs_fanout_data = [];
+tline = fgets(nand_delay_vs_fanout);
+while ischar(tline)
+    line_split = strsplit(tline);
+    line_size = size(line_split);
+    if (line_size(2) == 6)
+        nand_delay_vs_fanout_data = cat(1, nand_delay_vs_fanout_data, line_split(2:4));
+    end
+    tline = fgets(nand_delay_vs_fanout);
+end
+fclose(nand_delay_vs_fanout);
+
+fanout = str2double(nand_delay_vs_fanout_data(2:end,1));
+low_to_high_delay = str2double(nand_delay_vs_fanout_data(2:end,2)) / 1e-12;
+high_to_low_delay = str2double(nand_delay_vs_fanout_data(2:end,3)) / 1e-12;
+avg_prop_delay = (low_to_high_delay + high_to_low_delay)/2;
+plot(fanout, low_to_high_delay);
+hold on
+plot(fanout, high_to_low_delay);
+plot(fanout, avg_prop_delay);
+xlabel('Fanout', 'Interpreter', 'Latex');
+ylabel('Delay (ps)', 'Interpreter', 'Latex');
+title('Propagation Delay of a NAND3 with Increasing Fanout')
+
+% now let's fit a curve
+% params(1) = p
+% params(2) = LE
+% t_p,gate = t_inv(p + LE*f) where f is fanout
+prop_delay_fn = @(params, data)1.8478 * (params(1) + params(2) .* data);
+nand3_intrinsic_params = lsqcurvefit(prop_delay_fn, [1, 5/3], fanout, avg_prop_delay);
+plot(fanout, prop_delay_fn(nand3_intrinsic_params, fanout));
+legend('Low-to-High Delay', 'High-to-Low Delay', 'Avg Propagation Delay', 'Prop Delay Fn Fit');
