@@ -36,7 +36,7 @@ x3 v2out v3out vdd gnd inverter (size=64)
 
 * Analyses
 .op
-.tran 10f 200p START=0 SWEEP nmos_width_param 100n 200n 1n
+.tran 10f 200p START=0 SWEEP nmos_width_param 200n 270n 1n
 
 .option post=2 nomod
 .option accurate=1
