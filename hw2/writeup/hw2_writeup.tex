@@ -93,7 +93,15 @@ We run the functional testbench that counts from A=0000 to A=1111 and report the
 	
 	The power consumed as reported by SPICE with parasitics is a little lower than what was reported by PrimeTime.
 	
-	\item Mixed-Signal
+	\item Mixed-Signal: 75.79 uW
+	
+	We then set up a mixed-signal testbench by exporting the SPICE netlist of the extracted decoder. We create a wrapper for the decoder in Verilog and instantiate it in a testbench. The testbench is used to drive the inputs and check the outputs of the decoder, while the actual function of the decoder is simulated at the transistor level. This combines the best parts of the Primetime and SPICE flows by letting us write stimulus at a high-level (in Verilog), but still retain the precision of a transistor level simulation using SPICE.
+	
+	\begin{figure}[H]
+		\centerline{\includegraphics[height=6cm]{mixed_signal_power_analysis.png}}
+	\end{figure}
+
+	This snapshot from DVE shows the digital stimulus applied to the decoder and the SPICE simulated decoder's analog outputs.
 \end{itemize}
 
 \subsection{Voltage Scaling Power Estimates}
