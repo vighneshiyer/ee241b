@@ -133,6 +133,29 @@ Here are my summarized results that were produced by varying the supply voltage 
 
 \section{Variability and Timing Simulations}
 
+We begin by recording the nomimal (TT) FO4 low to high and high to low delays of an inverter. We size the inverters for minimum average delay.
+
+Using SPICE and the 32nm LP model with a 1.05V supply, we find the optimal width of the PMOS transistor that minimizes the propagation delay ($t_{p} = (t_{pHL} + t_{pLH}) / 2)$ for a CMOS inverter. We fix the NMOS transistor width at 100nm and the lengths of both transistors are fixed at the process' 32nm minimum.
+
+We use the F04 (fanout of 4) method of inverter delay characterization. I designed a simulation based on the paper "The Fanout-of-4 Inverter Delay Metric" by Harris, Horowitz, et al. The circuit setup from the paper is shown below.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[height=7cm]{images/f04_figure.png}}
+\end{figure}
+
+I swept the width of the PMOS from 100n to 200n while performing transient simulations. I measured the propagation delays (high-to-low and low-to-high) using '.measure' statements in SPICE. Propagation delay was measured from 50\% of the input to 50\% of the output. The results are summarized below:
+
+\begin{figure}[H]
+	\centerline{\includegraphics[height=7cm]{images/inverter_delay.png}}
+\end{figure}
+
+We find that the average propagation delay $t_p$ is minimized when the PMOS width is 121nm and the minimal delay is 12.4560 ps. The PMOS width that results in an equal low-to-high and high-to-low delay is 192.3nm and the equal delay is 12.96 ps. In conclusion, for the instructions in this part:
+
+\begin{eqnarray}
+W_{pmos,optimal} = 121 \text{ nm for } W_{nmos} = 100 \text{ nm} \nonumber \\
+t_{p,optimal} = 12.4560 \text{ ps} \nonumber
+\end{eqnarray}
+
 \newpage
 \appendix
 \section{PMOS/NMOS DC Characterization SPICE Sim} \label{dc_characterization_spice}
