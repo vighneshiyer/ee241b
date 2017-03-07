@@ -107,7 +107,27 @@ We run the functional testbench that counts from A=0000 to A=1111 and report the
 \subsection{Voltage Scaling Power Estimates}
 We run the mixed-signal simulation at 1.05V, 0.8V, 0.6V, and 0.4V and measure the average power for each voltage. We then convert average power to energy/op in terms of J/op and uW/Mhz. These results are compared to the theoretically predicted active energy savings for voltage scaling based on the 1.05V result.
 
-The clock period will have to increase for lower supply voltages to compensate for increased delay.
+The (fake) clock period will have to increase for lower supply voltages to compensate for increased delay.
+
+We theoretically predict that the dynamic power scales according to this equation:
+
+\begin{equation}
+	P_{dyn} = C_{eff} \cdot V_{DD}^2 \cdot f_{clk}
+\end{equation}
+
+with $C_{eff}$ being fixed for each supply voltage. 
+
+Here are my summarized results that were produced by varying the supply voltage to the decoder and measuring average power in the same manner. The number of operations is $2^4 = 16$ and $P_{scale,pred}$ is the predicted power scaling, $P_{pred}$ is the predicted power consumption, and $P_{sim}$ is the mixed-signal simulated actual power consumed. $t_{sim}$ is used to measure the time of the testbench. The clock period was changed manually until signal settling was sufficiently fast.
+
+\begin{center}
+\begin{tabular}{| l | l | l | l | l | l | l | l |} \hline
+	$V_{DD}$ & $T_{clk}$ & $P_{scale,pred}$ & $P_{pred}$ & $P_{sim}$ & $t_{sim}$ & J/op & uW/Mhz \\ \hline
+	1.05 V & 0.15 ns & 1.0 & 75.79 uW & 75.79 uW & 2.4 ns & 11.37 pJ & 1.14e-8 \\ \hline
+	0.8 V & 0.17 ns & 0.5122 & 38.82 uW & 50.27 uW & 2.72 ns & 8.546 pJ & 8.55e-9\\ \hline
+	0.6 V & 0.5 ns & 0.098 & 7.4274 uW & 13.56 uW & 8 ns & 6.78 pJ & 6.78e-8 \\ \hline
+	0.4 V & decoder doesn't work (5ns) & 0.0044 & 0.333 uW & 10 uW & 80ns & 50 pJ &  5e-8 \\ \hline
+\end{tabular}
+\end{center}
 
 \section{FF and Latch Based Timing}
 
