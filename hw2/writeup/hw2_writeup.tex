@@ -131,6 +131,24 @@ Here are my summarized results that were produced by varying the supply voltage 
 \end{center}
 
 \section{FF and Latch Based Timing}
+We consider this logic path.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[height=5cm]{images/logic_path.png}}
+\end{figure}
+
+\subsection{FF Timing}
+If registers R1 and R2 are positive edge triggered ($t_{setup} = t_{hold} = t_{clk-q} = 100$ ps), what is the minimum clock period that this system can operate at? Assume zero skew.
+
+\begin{eqnarray}
+	T_{clk} > t_{clk-q} + t_{logic,max} + t_{hold} \nonumber \\
+	T_{clk} > 100 + 800 + 100 = 1000 \text{ ps} \nonumber
+\end{eqnarray}
+
+\subsection{Latch Timing Phases}
+If R1 and R2 are level sensitive, label the clock phases so that the system operates correctly.
+
+If we are using fully out of phase clocks, 
 
 \section{Variability and Timing Simulations}
 
