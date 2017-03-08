@@ -10,6 +10,7 @@
 \usepackage{amsmath}
 \usepackage[toc,page]{appendix}
 \graphicspath{{images/}}
+\usepackage{gensymb}
 
 \usepackage{minted}
 \let\verbatiminput=\verbatimtabinput
@@ -149,16 +150,57 @@ I swept the width of the PMOS from 100n to 200n while performing transient simul
 	\centerline{\includegraphics[height=7cm]{images/inverter_delay.png}}
 \end{figure}
 
-We find that the average propagation delay $t_p$ is minimized when the PMOS width is 121nm and the minimal delay is 12.4560 ps. The PMOS width that results in an equal low-to-high and high-to-low delay is 192.3nm and the equal delay is 12.96 ps. In conclusion, for the instructions in this part:
+We find that the average propagation delay $t_p$ is minimized when the PMOS width is 121nm and the minimal delay is 12.4560 ps. The PMOS width that results in an equal low-to-high and high-to-low delay is 192.3nm and the equal delay is 12.96 ps. In conclusion,:
 
 \begin{eqnarray}
 W_{pmos,optimal} = 121 \text{ nm for } W_{nmos} = 100 \text{ nm} \nonumber \\
 t_{p,optimal} = 12.4560 \text{ ps} \nonumber
 \end{eqnarray}
 
+\subsection{Delay Variation Across Process Corners}
+We use the same F04 testbench and the optimally sized inverter, but now we vary process corners (SS, FF, SF, and FS) and log how the delay L-H and H-L is affected by the process corner.
+
+\begin{center}
+\begin{tabular}{| l | l | l |} \hline
+	Corner & Delay L-H (ps) & Delay H-L (ps) \\ \hline
+	TT & 13.613 & 11.299 \\ \hline
+	FF & 9.422 & 7.877 \\ \hline
+	SS & 18.316 & 15.645 \\ \hline
+	SF & 13.926 & 14.514 \\ \hline
+	FS & 15.418 & 6.442\\ \hline
+\end{tabular}
+\end{center}
+
+\subsection{Monte Carlo Simulation for Transistor Mismatch}
+The transistor models use the Pelgrom mismatch model with $A_{Vt} = 2 \text{ mV} \mu \cdot \text{m}$. We run a 300-point Monte Carlo simulation and find the standard deviation of the delay, as well as the minimum and maximum delays observed.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[height=7cm]{images/monte_carlo_histogram.png}}
+\end{figure}
+
+The standard deviation of the L-H delay is 0.852 ps and H-L delay is 0.871. The range of L-H delay is (11.0543 ps, 16.7512 ps) and H-L delay is (9.5815 ps, 14.2203 ps).
+
+\subsection{Delay Variation with Temperature}
+We want to find how the delay (L-H and H-L) of an inverter changes with operation at 0$\degree$ C to 100$\degree$ C.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[height=7cm]{images/temp_variation.png}}
+\end{figure}
+
+The collected data shows that temperature plays a much smaller role than process variation in the delay of an optimal inverter.
+
+The L-H delay goes from 13.58 ps to 13.93 ps and the H-L delay goes from 11.28 ps to 11.71 ps.
+
+\subsection{Impact of Variability on Timing}
+If the critical path consisted of 7 F04 inverter stages, how would we set the nominal clock period? How much slower would the clock have to be set under worst-case global conditions and 3 sigma threshold variation?
+
+We can use the nominal average delay of a F04 inverter stage as 12.46 ps. 7 of these stages gives us a total combinational delay of 87.22 ps. Thus the nominal clock period should be $87.22 + t_{clk-q} + t_{setup}$. Estimating $t_{clk-q} = t_{setup} = 20 ps$, the nominal clock period is: 127.22 ps.
+
+Under worst-case global conditions, we have to assume the slowest L-H propagation delay of 16.75 ps. Then we get a clock period of 157.25 ps.
+
+Under 3 sigma threshold variation, we take the mean of the average propagation delay which is 12.59 ps and add 3 times the overall SD which is $3 \cdot 0.6036$ ps. Thus the clock period becomes: 140.81 ps.
+
 \newpage
 \appendix
-\section{PMOS/NMOS DC Characterization SPICE Sim} \label{dc_characterization_spice}
-
 
 \end{document}
