@@ -28,7 +28,7 @@ x3 v16out v64out vdd gnd inverter (size=64)
 
 * Analyses
 .op
-.tran 1f 200p UIC SWEEP TEMP 0 100 1
+.tran 1f 200p SWEEP TEMP 0 100 1
 
 .option post=2 nomod
 .option accurate=1
