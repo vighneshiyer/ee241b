@@ -9,3 +9,7 @@ _minted*
 *.log.*
 *.tr0
 *.ic0@0
+*.ic0
+*.pa0
+*.st0
+*.mt0
