@@ -29,7 +29,7 @@ x3 v16out v64out vdd gnd inverter (pmos_width=pmos_width_param, size=64)
 
 * Analyses
 .op
-.tran 1f 200p START=0 SWEEP pmos_width_param 100n 200n 1n
+.tran 1f 200p START=0 SWEEP pmos_width_param 100n 200n .1n
 
 .option post=2 nomod
 .option accurate=1
