@@ -148,7 +148,38 @@ If registers R1 and R2 are positive edge triggered ($t_{setup} = t_{hold} = t_{c
 \subsection{Latch Timing Phases}
 If R1 and R2 are level sensitive, label the clock phases so that the system operates correctly.
 
-If we are using fully out of phase clocks, 
+If we are using fully out of phase clocks with no overlap, then R1 should be clocked by the general system clock, and R2 should be clocked with an inverted (180 $\degree$ out of phase) system clock.
+
+\subsection{Latch Timing Clock Period}
+We find the shortest clock cycle in a latch-based system with $t_{setup} = t_{hold} = t_{clk-q} = t_{d-q} = 100$ ps. The clock has a fixed 50\% duty cycle and only 2 phases of the clock can be used for clocking. There is zero skew.
+
+This rule must hold to prevent late latch arrivals:
+\begin{eqnarray}
+	T_{cycle} + PW > t_{clk-q} + t_{logic,max} + t_{setup} + t_{skew} \\ 
+	T_{cycle} + PW > t_{d-q} + t_{logic,min} + t_{borrowed}
+\end{eqnarray}
+
+We also enforce this rule to prevent premature latch arrivals (data races):
+\begin{equation}
+	t_{clk-q} + t_{logic,min} > PW + t_{hold} + t_{skew}
+\end{equation}
+
+$PW$ is the pulse width and we set it to half the $T_{cycle}$ for this problem.
+
+Plugging in our values, we get:
+\begin{eqnarray}
+	1.5 \cdot T_{cycle} > 100 + 800 + 100 + 0 \nonumber \\
+	1.5 \cdot T_{cycle} > 100 + 50 + t_{borrowed} \nonumber \\
+	100 + 50 > 0.5 T_{cycle} + 100 \nonumber 
+\end{eqnarray}
+
+\begin{eqnarray}
+	1.5 \cdot T_{cycle} > 100 + 800 + 100 + 0 \nonumber \\
+	1.5 \cdot T_{cycle} > 100 + 50 + t_{borrowed} \nonumber \\
+	100 + 50 > 0.5 T_{cycle} + 100 \nonumber 
+\end{eqnarray}
+
+
 
 \section{Variability and Timing Simulations}
 
