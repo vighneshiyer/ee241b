@@ -161,7 +161,7 @@ This rule must hold to prevent late latch arrivals:
 
 We also enforce this rule to prevent premature latch arrivals (data races):
 \begin{equation}
-	t_{clk-q} + t_{logic,min} > PW + t_{hold} + t_{skew}
+	 t_{logic,min} > t_{hold} - t_{clk-q} - t_{non-overlapping} + t_{skew}
 \end{equation}
 
 $PW$ is the pulse width and we set it to half the $T_{cycle}$ for this problem.
@@ -170,16 +170,27 @@ Plugging in our values, we get:
 \begin{eqnarray}
 	1.5 \cdot T_{cycle} > 100 + 800 + 100 + 0 \nonumber \\
 	1.5 \cdot T_{cycle} > 100 + 50 + t_{borrowed} \nonumber \\
-	100 + 50 > 0.5 T_{cycle} + 100 \nonumber 
+	50 > 100 - 100 - 0 + 0 \nonumber 
 \end{eqnarray}
 
 \begin{eqnarray}
-	1.5 \cdot T_{cycle} > 100 + 800 + 100 + 0 \nonumber \\
-	1.5 \cdot T_{cycle} > 100 + 50 + t_{borrowed} \nonumber \\
-	100 + 50 > 0.5 T_{cycle} + 100 \nonumber 
+	T_{cycle} > 666 \nonumber \\
+	T_{cycle} > 100 + t_{borrowed}/1.5 \nonumber \\
+	50 > 0 \nonumber 
 \end{eqnarray}
 
+So our $T_{cycle}$ must be $> 666$ ps.
 
+\subsection{Latch Timing with Clock Skew}
+We now examine the case of worst-case skew of 100 ps.
+
+\begin{eqnarray}
+	1.5 \cdot T_{cycle} > 100 + 800 + 100 + 100 \nonumber \\
+	1.5 \cdot T_{cycle} > 100 + 50 + t_{borrowed} \nonumber \\
+	50 > 100 - 100 - 0 + 100 \nonumber 
+\end{eqnarray}
+
+We can immediately see that skew of 100 ps with a 50\% duty cycle clock will violate the hold time requirement and thus timing is impossible to meet.
 
 \section{Variability and Timing Simulations}
 
