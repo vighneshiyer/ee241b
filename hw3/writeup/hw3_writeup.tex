@@ -70,7 +70,29 @@ We create histograms and fit a normal curve for the delay at 0.6V and 1.05V.
 The histogram for $V_{DD} = 1.05V$ is roughly Gaussian and can be closely approximated with a normal distribution. However the histogram for $V_{DD} = 0.6V$ is asymmetric and a Gaussian is a poor fit for it. There is a long right tail, and it comes about due to a certain transistor having a much higher $V_{th}$ which increases its delay a lot more at a lower $V_{DD}$.
 
 \subsection{$\sigma_{V_{th}}$ and Monte Carlo in MATLAB}
+We compute $\sigma_{V_{th}}$ for the NMOS in \verb|INVX0_RVT|. As per the Pelgrom mismatch model:
 
+\begin{equation}
+	\sigma_{V_{th}} = \frac{A_{V_t}}{\sqrt{W \cdot L}} = \frac{2}{\sqrt{W \cdot L \cdot 1e6 \cdot 1e6}} \text{ mV}
+\end{equation}
+
+In this design kit, $A_{V_t}$ is set to 2 $mV \cdot \mu m$. The minimally sized inverter contains an NMOS with a width of 520nm and length of 30nm. Thus, we get $\sigma_{V_{th}} = 16.01$ mV for the NMOS.
+
+Now we use the alpha-power law's equation for $I_{on}$ and parameter values $K = 1.7\text{e-4}, V_{th} = 0.336, \alpha = 1.36$. We find the equation for the delay of an inverter assuming maximum current for a transition from $V_{DD}$ to $V_{DD}/2$. We also estimate $\Delta T = C \Delta V / I$ where $\Delta V = V_{DD} / 2$ and $C \approx 1.5$ fF.
+
+\begin{eqnarray}
+	I_{on} = K (V_{gs} - V_{th}) ^ \alpha \nonumber \\
+	\Delta T = \frac{C \cdot 0.5 V_{DD}}{K (V_{DD} - V_{th} + \Delta V_{th}) ^ \alpha} \nonumber
+\end{eqnarray}
+
+We use MATLAB to run a Monte Carlo simulation on this delay model for $V_{DD} = 0.5, 1.05$ V and compare it with the HSPICE results in the previous section. We get 600 samples from a (0, $\sigma_{V_{th}}$) normal distribution and plug those samples into the delay formula for different values of $V_{DD}$.
+
+\begin{figure}[H]
+	\centerline{\includegraphics[width=\textwidth+4cm]{delay_histograms_matlab.png}}
+	\caption{Two histograms that contain delays from the MATLAB monte carlo sim (600 points). Left histogram is at $V_{DD} = 1.05V$ and right histogram is at $V_{DD} = 0.6V$.}
+\end{figure}
+
+We see similar output from the MATLAB Monte Carlo and the HSPICE Monte Carlo. The delay distribution for $V_{DD} = 1.05$V is narrow and approximately normal, while the delay distribution for $V_{DD} = 0.6$V is much wider and has a long right tail. Based on the delay equation, the distribution should approach a Gaussian with increasing $V_{DD}$.
 
 \section{Flip-Flops}
 \begin{figure}[H]
