@@ -40,9 +40,38 @@ We then tell DC and ICC to use our custom standard cell and we measure the criti
 \subsection{Standard Cell Inverter Variation Impact vs $V_{DD}$}
 We run a 300 point Monte Carlo simulation and plot the mean and sigma for the input-rising/output-falling delay of the \verb|INVX0_RVT| standard cell for $V_{DD}$ between 0.2 and 1.05. We fix an input slope of 10ps and a 1fF load. This part was done by exporting a netlist from Virtuoso and using commandline HSPICE for the simulation.
 
+\begin{figure}[H]
+	\centerline{\includegraphics[width=\textwidth+4cm]{delay_vs_vdd.png}}
+	\caption{Plot is log-scale in y-axis.}
+\end{figure}
+
 We then plot $\sigma / \mu$ vs. $V_{DD}$.
 
+\begin{figure}[H]
+	\centerline{\includegraphics[width=\textwidth+4cm]{relative_delay_variation_vs_vdd.png}}
+\end{figure}
+
 Finally we plot the delay of a $6 \sigma$ cell relative to the mean vs. $V_{DD}$.
+
+
+\section{Flip-Flops}
+\begin{figure}[H]
+	\centerline{\includegraphics[height=5cm]{flip_flop_schematic.jpg}}
+	\caption{A schematic of a sequential circuit.}
+\end{figure}
+
+\subsection{Identify Circuit}
+
+Assuming that C1 and C2 are opposite phases of the same clock, the circuit above implements a \textbf{D-type flip-flop} using a master-slave latch topology.
+
+When C1 is high, the first transmission gate is transparent and the data is allowed to settle at the input of the second transmission gate. At the moment that C2 goes high, C1 goes low to close off any further input changes, and the output reflects the 'last' value that passed through the first transmission gate while C1 was high.
+
+The rest of the circuitry serves to make the flip-flop static by providing feedback into the storage nodes and there is an additional transmission gate that can be used by a scan chain.
+
+\subsection{FF Timing Characteristics}
+Assuming that the NMOS and PMOS devices have the same mobility and are all symmetrically sized, order the following timing parameters by magnitude: setup time, hold time, clock-output delay.
+
+The setup time is approximately equal to the time it takes for an input signal at \verb|DIN| to race past the first transmission gate, after which the gate can become opaque. The hold time is close to 0 since after C2 goes high
 
 \newpage
 \appendix
