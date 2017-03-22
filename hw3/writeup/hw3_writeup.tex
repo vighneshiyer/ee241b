@@ -116,9 +116,92 @@ The setup time is approximately equal to the time it takes for an input signal a
 So in order of smallest to largest: \textbf{hold time, setup time, clock to output delay}.
 
 \section{Timing}
+\begin{figure}[H]
+	\centerline{\includegraphics[width=\textwidth+4cm]{problem3_timing_path.png}}
+\end{figure}
+
+Given this pipeline stage and the annotated max and min propagation delays, we want to minimize the cycle time using deeper pipelining. An additional 2 cycles of latency can be added using either latches or FFs. Assume no clock skew. Clock duty cycle is fixed at 50\%.
+
+\begin{itemize}
+	\item FF: Clk-q = 200ps, Setup = 100ps, Hold = 0ps
+	\item Latch: Clk-q, D-q = 150ps, Setup 100ps, Hold = 0ps
+\end{itemize}
+
+As the pipeline stage stands now, the minimum clock period is $T_{clk} = t_{clk-q} + t_{logic,max} + t_{setup} = 0.2 + 7.0 + 0.1 = 7.3$ns.
+
+If we were to add 2 flip-flops, the goal is to divide the combinational delay equally between every flip-flop. This means a delay of $7.0/3 = 2.33$ns per stage. Failing to do that, the next best option would be placement of the flip-flops such that the maximum logic path between any 2 flip-flops is as short as possible. We can ignore hold time constraints since there is a positive $t_{clk-q}$ and zero hold time.
+
+To iterate through the various placements of flip-flops, I wrote a script that's attached in the appendix. There are 3 flip-flop positions that obtain the minimal max delay among all 3 timing paths of 2.7 ns (leading to a minimum clock period of 3.0ns).
+
+\begin{itemize}
+	\item FF1 after 2 bubbles, FF2 after 7 bubbles, delays: (1.7, 2.6, 2.7)
+	\item FF1 after 3 bubbles, FF2 after 7 bubbles, delays: (2.4, 1.9. 2.7)
+	\item FF1 after 3 bubbles, FF2 after 8 bubbles, delays: (2.4, 2.7, 1.9)
+\end{itemize}
+
+We can likely improve on this clock period using latches to let the stage with longer delay borrow slack from the stage with shorter delay. For this to work optimally, the max difference between any two delays needs to be minimal. The 2nd or 3rd FF configuration is suitable for latch conversion. For latch timing analysis, we now need to look at hold time constraints as well.
+
 
 
 \newpage
 \appendix
 
+\section{Inverter Delay vs. VDD SPICE File}
+\begin{minted}[breaklines,tabsize=2]{text}
+Running Monte-Carlo simulation while sweeping VDD
+
+.lib '/home/ff/ee241/synopsys-32nm/hspice/saed32nm.lib' TT
+*  Library name: saed32nm_rvt
+*  Cell name: INVX0_RVT
+*  View name: schematic
+.subckt invx0_rvt a vdd vss y
+xmp y a vdd vdd p105 m=1 w=520e-9 l=30e-9 ad=10.5e-15 as=10.5e-15 pd=310e-9 ps=310e-9
+xmn y a vss vss n105 m=1 w=270e-9 l=30e-9 ad=10.5e-15 as=10.5e-15 pd=310e-9 ps=310e-9
+.ends 
+
+* Parameters and supplies
+.param VDD_val=1.05
+vdd vdd gnd VDD_val
+vin vin gnd pwl(0 0 10p 0 20p VDD_val)
+
+* DUT instantiation and load capacitor
+xdut vin vdd gnd vout invx0_rvt
+c1 vout gnd 1f
+
+* Measurements (input-rising to output-falling delay)
+.measure tran inv_delay trig v(vin) val=VDD_val/2 rise=1 targ v(vout) val=VDD_val/2 fall=1
+
+* Analyses
+.op
+.tran 1f 12n SWEEP MONTE=300
+
+.option post=2 nomod
+.end
+\end{minted}
+
+\section{Flip-Flop Timing Script}
+\begin{minted}[tabsize=4,breaklines]{python}
+delays = [1, 0.7, 0.7, 0.5, 0.2, 0.2, 1, 0.8, 0.2, 0.4, 0.5, 0.8]
+print("Sum of all delays: %f" % sum(delays))
+for ff1_pos in range(len(delays)):
+	for ff2_pos in range(ff1_pos + 1, len(delays)):
+		start_to_ff1 = sum(delays[0:ff1_pos])
+		ff1_to_ff2 = sum(delays[ff1_pos:ff2_pos])
+		ff2_to_end = sum(delays[ff2_pos:len(delays)])
+		total = start_to_ff1 + ff1_to_ff2 + ff2_to_end
+		max_of_delays = max(start_to_ff1, ff1_to_ff2, ff2_to_end)
+		if max_of_delays <= 3.0:
+			print("ff1: %02d ff2: %02d start_to_ff1: %f ff1_to_ff2: %f ff2_to_end: %f max_of_delays: %f" % (ff1_pos, ff2_pos, start_to_ff1, ff1_to_ff2, ff2_to_end, max_of_delays))
+\end{minted}
+\begin{minted}[breaklines]{text}
+Sum of all delays: 7.000000
+ff1: 02 ff2: 07 start_to_ff1: 1.700000 ff1_to_ff2: 2.600000 ff2_to_end: 2.700000 max_of_delays: 2.700000
+ff1: 03 ff2: 07 start_to_ff1: 2.400000 ff1_to_ff2: 1.900000 ff2_to_end: 2.700000 max_of_delays: 2.700000
+ff1: 03 ff2: 08 start_to_ff1: 2.400000 ff1_to_ff2: 2.700000 ff2_to_end: 1.900000 max_of_delays: 2.700000
+ff1: 03 ff2: 09 start_to_ff1: 2.400000 ff1_to_ff2: 2.900000 ff2_to_end: 1.700000 max_of_delays: 2.900000
+ff1: 04 ff2: 07 start_to_ff1: 2.900000 ff1_to_ff2: 1.400000 ff2_to_end: 2.700000 max_of_delays: 2.900000
+ff1: 04 ff2: 08 start_to_ff1: 2.900000 ff1_to_ff2: 2.200000 ff2_to_end: 1.900000 max_of_delays: 2.900000
+ff1: 04 ff2: 09 start_to_ff1: 2.900000 ff1_to_ff2: 2.400000 ff2_to_end: 1.700000 max_of_delays: 2.900000
+ff1: 04 ff2: 10 start_to_ff1: 2.900000 ff1_to_ff2: 2.800000 ff2_to_end: 1.300000 max_of_delays: 2.900000
+\end{minted}
 \end{document}
