@@ -111,7 +111,12 @@ The rest of the circuitry serves to make the flip-flop static by providing feedb
 \subsection{FF Timing Characteristics}
 Assuming that the NMOS and PMOS devices have the same mobility and are all symmetrically sized, order the following timing parameters by magnitude: setup time, hold time, clock-output delay.
 
-The setup time is approximately equal to the time it takes for an input signal at \verb|DIN| to race past the first transmission gate, after which the gate can become opaque. The hold time is close to 0 since after C2 goes high
+The setup time is approximately equal to the time it takes for an input signal at \verb|DIN| to race past the first transmission gate, after which the gate can become opaque. The hold time is close to 0 since after C2 goes high the first transmission gate becomes opaque and \verb|DIN| can't influence the flip-flop anyways. Also, the storage node doesn't need \verb|DIN| after the rising edge of C2. The clock to output delay is approximately equal to the delay through the second transmission gate and an inverter.
+
+So in order of smallest to largest: \textbf{hold time, setup time, clock to output delay}.
+
+\section{Timing}
+
 
 \newpage
 \appendix
