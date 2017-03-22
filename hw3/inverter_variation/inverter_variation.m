@@ -155,6 +155,16 @@ title('Relative Variation with respect to Delay', 'Interpreter', 'Latex');
 xlabel('$V_{DD}$ (V)', 'Interpreter', 'Latex');
 ylabel('$\sigma / \mu$', 'Interpreter', 'Latex');
 
+%% problem 1b plotting
+% delay of a 6 sigma cell relative to the mean vs VDD
+six_sigma_delay = mean_delays + (6 .* sd_delays);
+semilogy(voltages, six_sigma_delay / 1e-12);
+hold on;
+semilogy(voltages, mean_delays / 1e-12);
+title('$6 \sigma$ Delay vs. Average Delay', 'Interpreter', 'Latex');
+xlabel('$V_{DD}$ (V)', 'Interpreter', 'Latex');
+ylabel('Delay (ps)', 'Interpreter', 'Latex');
+legend({'6$\sigma$ delay', 'average delay'}, 'Interpreter', 'Latex');
 
 %% problem 3a preface, plotting inverter delay as a function of PMOS width
 inverter_delay_file = fopen('part_a/inverter_delay_pmos_sweep.txt');

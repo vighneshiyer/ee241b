@@ -53,6 +53,24 @@ We then plot $\sigma / \mu$ vs. $V_{DD}$.
 
 Finally we plot the delay of a $6 \sigma$ cell relative to the mean vs. $V_{DD}$.
 
+\begin{figure}[H]
+	\centerline{\includegraphics[width=\textwidth+4cm]{six_sigma_delay_vs_vdd.png}}
+\end{figure}
+
+Variation has a larger effect at low voltages since our mismatch model works by setting $V_{th}$ of each transistor using a probability distribution with a $\sigma_{V_{th}}$. At lower voltages, the transistor has an operating voltage around its threshold voltage and thus makes the variation more pronounced.
+
+\subsection{Delay Distributions for Different $V_{DD}$}
+We create histograms and fit a normal curve for the delay at 0.6V and 1.05V. 
+
+\begin{figure}[H]
+	\centerline{\includegraphics[width=\textwidth+4cm]{delay_histograms.png}}
+	\caption{Two histograms that contain delays from the 300 point monte carlo sim. Left histogram is at $V_{DD} = 1.05V$ and right histogram is at $V_{DD} = 0.6V$.}
+\end{figure}
+
+The histogram for $V_{DD} = 1.05V$ is roughly Gaussian and can be closely approximated with a normal distribution. However the histogram for $V_{DD} = 0.6V$ is asymmetric and a Gaussian is a poor fit for it. There is a long right tail, and it comes about due to a certain transistor having a much higher $V_{th}$ which increases its delay a lot more at a lower $V_{DD}$.
+
+\subsection{$\sigma_{V_{th}}$ and Monte Carlo in MATLAB}
+
 
 \section{Flip-Flops}
 \begin{figure}[H]
