@@ -141,12 +141,34 @@ To iterate through the various placements of flip-flops, I wrote a script that's
 
 We can likely improve on this clock period using latches to let the stage with longer delay borrow slack from the stage with shorter delay. For this to work optimally, the max difference between any two delays needs to be minimal. The 2nd or 3rd FF configuration is suitable for latch conversion. For latch timing analysis, we now need to look at hold time constraints as well.
 
+Here are the setup time constraints for latch timing on our design:
+\begin{eqnarray}
+	\text{For longest path: } 1.5 \cdot T_{clk} > t_{clk-q} + t_{logic,max} + t_{setup} \\
+	\text{Middle path: } 1.5 \cdot T_{clk} > t_{d-q} + t_{logic,mid} + t_{borrow,mid} \\
+	\text{Shortest path: } 1.5 \cdot T_{clk} > t_{d-q} + t_{logic,min} + t_{borrow,min} \\
+	t_{borrow,mid} + t_{borrow,min} < 0.5 \cdot T_{clk}
+\end{eqnarray}
 
+Here are some general checks that need to hold (derivatives of the above constraints):
+\begin{eqnarray}
+	t_{logic,max} <= 1.5 T_{clk} \\
+	\text{Path logic delay} = t_{logic,max} + t_{logic,mid} + t_{logic,min} <= 3 \cdot T_{clk}
+\end{eqnarray}
 
+Finally the hold time constraints:
+\begin{eqnarray}
+	\text{For every path: } 0.5 T_{clk} + t_{hold} < t_{clk-q} + t_{logic,min}
+\end{eqnarray}
+
+To try every latch configuration and see what works, we will use a script. The result is attached in the appendix; all latch configurations seem to have hold time violations that are unresolvable by reducing the clock period (since that would break a setup time constraint).
+
+\textbf{The best clock period appears to be 3.0 ns with 2 flip-flops.} We can probably explore adding a latch to the stage with the lowest delay to absorb the slack borrowed from the previous stage.
+
+The best configuration there appears to be a \textbf{flip-flop after 3 bubbles and a latch after 8 bubbles}.
 \newpage
 \appendix
 
-\section{Inverter Delay vs. VDD SPICE File}
+\section{Inverter Delay vs. VDD - SPICE File}
 \begin{minted}[breaklines,tabsize=2]{text}
 Running Monte-Carlo simulation while sweeping VDD
 
@@ -179,7 +201,7 @@ c1 vout gnd 1f
 .end
 \end{minted}
 
-\section{Flip-Flop Timing Script}
+\section{Flip-Flop Timing Script - Python}
 \begin{minted}[tabsize=4,breaklines]{python}
 delays = [1, 0.7, 0.7, 0.5, 0.2, 0.2, 1, 0.8, 0.2, 0.4, 0.5, 0.8]
 print("Sum of all delays: %f" % sum(delays))
@@ -203,5 +225,55 @@ ff1: 04 ff2: 07 start_to_ff1: 2.900000 ff1_to_ff2: 1.400000 ff2_to_end: 2.700000
 ff1: 04 ff2: 08 start_to_ff1: 2.900000 ff1_to_ff2: 2.200000 ff2_to_end: 1.900000 max_of_delays: 2.900000
 ff1: 04 ff2: 09 start_to_ff1: 2.900000 ff1_to_ff2: 2.400000 ff2_to_end: 1.700000 max_of_delays: 2.900000
 ff1: 04 ff2: 10 start_to_ff1: 2.900000 ff1_to_ff2: 2.800000 ff2_to_end: 1.300000 max_of_delays: 2.900000
+\end{minted}
+
+\section{Latch Timing Script - Python}
+\begin{minted}[breaklines,tabsize=4]{python}
+max_delays = [1, 0.7, 0.7, 0.5, 0.2, 0.2, 1, 0.8, 0.2, 0.4, 0.5, 0.8]
+min_delays = [0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.1, 0.1]
+t_setup = 0.1
+t_hold = 0.0
+t_clkq = 0.150
+t_dq = 0.150
+for l1_pos in range(len(max_delays)):
+for l2_pos in range(l1_pos + 1, len(max_delays)):
+start_to_l1_max = sum(max_delays[0:l1_pos])
+l1_to_l2_max = sum(max_delays[l1_pos:l2_pos])
+l2_to_end_max = sum(max_delays[l2_pos:len(max_delays)])
+
+start_to_l1_min = sum(min_delays[0:l1_pos])
+l1_to_l2_min = sum(min_delays[l1_pos:l2_pos])
+l2_to_end_min = sum(min_delays[l2_pos:len(min_delays)])
+
+# Compute the ideal max clock period based on longest logic path
+path_delays = [start_to_l1_max, l1_to_l2_max, l2_to_end_max]
+path_delays.sort() # ascending sort
+T_clk = (t_clkq + path_delays[2] + t_setup) / 1.5
+
+# Compute t_borrow,mid and t_borrow,min
+t_borrow_mid = (1.5 * T_clk) - t_dq - path_delays[1]
+t_borrow_min = (1.5 * T_clk) - t_dq - path_delays[0]
+
+# Perform borrowing checks
+borrow_ok = t_borrow_mid + t_borrow_min < T_clk
+if not borrow_ok:
+T_clk = (t_borrow_mid + t_borrow_min) / 0.5
+
+# Check hold time constraints for each path
+min_path_delays = [start_to_l1_min, l1_to_l2_min, l2_to_end_min]
+hold2_ok = 0.5 * T_clk + t_hold < t_clkq + min_path_delays[2]
+hold1_ok = 0.5 * T_clk + t_hold < t_clkq + min_path_delays[1]
+hold0_ok = 0.5 * T_clk + t_hold < t_clkq + min_path_delays[0]
+hold_ok = hold2_ok and hold1_ok and hold0_ok
+
+if T_clk < 2:
+print("l1: %02d l2: %.2d T_clk: %.2f max delays: (%.2f %.2f %.2f) min delays: (%.2f %.2f %.2f) hold_ok: (%d, %d, %d)" 
+% (l1_pos, l2_pos, T_clk, start_to_l1_max, l1_to_l2_max, l2_to_end_max, 
+start_to_l1_min, l1_to_l2_min, l2_to_end_min, hold0_ok, hold1_ok, hold2_ok))
+\end{minted}
+\begin{minted}{text}
+l1: 02 l2: 07 T_clk: 1.97 max delays: (1.70 2.60 2.70) min delays: (0.30 0.50 0.60) hold_ok: (0, 0, 0)
+l1: 03 l2: 07 T_clk: 1.97 max delays: (2.40 1.90 2.70) min delays: (0.40 0.40 0.60) hold_ok: (0, 0, 0)
+l1: 03 l2: 08 T_clk: 1.97 max delays: (2.40 2.70 1.90) min delays: (0.40 0.50 0.50) hold_ok: (0, 0, 0)
 \end{minted}
 \end{document}
