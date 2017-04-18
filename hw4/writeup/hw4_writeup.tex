@@ -1,0 +1,72 @@
+\documentclass[11pt]{article}
+
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{fullpage}
+\usepackage{verbatim}
+\usepackage{moreverb}
+\usepackage{graphicx}
+\usepackage{parskip}
+\usepackage{amsmath}
+\usepackage{etoolbox}
+\usepackage[toc,page]{appendix}
+\graphicspath{{images/}}
+\usepackage{gensymb}
+
+\usepackage{minted}
+\let\verbatiminput=\verbatimtabinput
+\def\verbatimtabsize{4\relax}
+
+\begin{document}
+\title{EE 241B HW4 Writeup}
+
+\author{Vighnesh Iyer}
+\date{}
+\maketitle
+
+\tableofcontents
+
+\section{Delay Replicas}
+\begin{quote}
+	Your design has a critical path of 20 FO4 inverter delays at the nominal supply voltage. Your friend has suggested to design a replica circuit consisting of N FO1 inverters (where N is approximately 40.
+\end{quote}
+
+\subsection{Replica Design}
+\begin{quote}
+	Design the actual replica made of N-1 identical stages with the Nth stage having an increased fanout to match the actual critical path. What is the fanout of the Nth stage?
+\end{quote}
+
+We begin by calculating the critical path delay in terms of minimally sized inverter delays $t_{inv}$ using the method of logical effort. We first define all the variables that are used for logical effort delay calculations.
+
+\begin{align}
+	f &= \text{ fanout of single stage} = C_{out} / C_{in} \nonumber \\
+	F &= \text { total fanout} = C_{L,total} / C_{in} \nonumber \\
+	\text{EF} &= \text { effective fanout} = \text{LE} f \nonumber \\
+	p &= \text{ intrinsic delay (ratio of PMOS to NMOS capacitance)}; p_{inv} = \gamma \nonumber \\
+	\text{LE} &= \text { logical effort} = (R_{eq,gate} C_{in,gate}) / (R_{eq,inv} C_{in,inv}); LE_{inv} = 1 \nonumber \\
+	\text{b} &= \text{ branching factor} = \frac{C_{L,on-path} + C_{L,off-path}}{C_{L,on-path}} \nonumber \\
+	\text{PE} &= \text{ path effort} = (\prod \text{LE}) (\prod b) F \nonumber \\
+	t_{p,gate} &= t_{inv}(p + \text{LE}f) = t_{inv}(p + \text{EF}) \nonumber
+\end{align}
+
+Now we calculate the critical path delay.
+
+\begin{align}
+	t_{delay,inv} &= t_{inv}(p_{inv} + \text{LE} f) \nonumber \\
+	t_{delay,inv} &= t_{inv}(\gamma + 4) \nonumber \\
+	t_{delay,crit-path} &= t_{delay,inv}  \cdot N_{stages} = 20 \cdot t_{inv}(\gamma + 4) \nonumber
+\end{align}
+
+Let's now consider the path that consists of 39 FO1 inverters and 1 larger inverter. We can break this path's delay into 2 sub-delays.
+
+\begin{align}
+	t_{delay,replica1} &= 39 \cdot t_{inv}(\gamma + 1) \nonumber \\
+	t_{delay,replaca2} &= t_{inv}(\gamma + f_{last,stage}) \nonumber \\
+	t_{delay,replica} &= 39 t_{inv}(\gamma + 1) + t_{inv}(\gamma + f_{last,stage}) \nonumber \\
+	\text{Set } t_{delay,replica} &= t_{delay,crit-path} \nonumber 
+\end{align}
+
+\newpage
+\appendix
+
+\end{document}
