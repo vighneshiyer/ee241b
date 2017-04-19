@@ -66,6 +66,63 @@ Let's now consider the path that consists of 39 FO1 inverters and 1 larger inver
 	\text{Set } t_{delay,replica} &= t_{delay,crit-path} \nonumber 
 \end{align}
 
+Performing calculations, and assuming $\gamma = 1$ for a modern process, we get $f_{last,stage}$ = 21, and an approximate area reduction for the replica from 80 to 60.
+
+\subsection{Replica Tracking Across Different Gates}
+\begin{quote}
+	There are three nearly identical critical paths in the circuit, one consisting of 20 FO4 inverters, one consisting of all NAND2s and one consisting of all NOR2s. Simulate tracking of the replica from part a) from the nominal down to 0.5V with 50 mV steps.
+\end{quote}
+
+\section{Power-performance Tradeoffs}
+
+\subsection{Energy/Delay Sensitivity}
+\begin{quote}
+	Using the alpha-power law model, derive the analytical expression for the energy/delay sensitivity of a design to scaling of supply voltage. Evaluate this expression at the nominal supply voltage, using the results from Homework 1 ($K = 0.001, \alpha = 1.5, V_{th} = 0.45 \text{V for NMOS}$)
+\end{quote}
+
+We can model the switching NMOS transistor as a current source charging its self-capacitance and load capacitance which we lump together as $C$.
+
+\begin{align}
+	I_D &= K (V_{GS} - V_{th})^\alpha \propto t_{delay} \nonumber \\
+	V_{GS} &= V_{DD} \text{ assuming instant switching} \nonumber \\
+	\text{for NMOS's capacitor } V(t) &= \frac{Q(t)}{C} = \frac{1}{C}\int_{0}^{t}I(t) dt = \frac{1}{C}\int_{0}^{t} K (V_{DD} - V_{th})^\alpha dt \nonumber \\
+	&= \frac{1}{C} K (V_{DD} - V_{th})^\alpha t = V_{DD} \nonumber \\
+	t_{delay} &= \frac{V_{DD} K C}{(V_{DD} - V_{th})^\alpha} \nonumber \\
+	E_{gate} &= C V_{DD}^2 \nonumber
+\end{align}
+
+To get sensitivities to $V_{DD}$ take an integral with respect to $V_{DD}$.
+
+\begin{align}
+	\frac{\partial t}{\partial V_{DD}} = K C \frac{(\alpha - 1)V_{DD} + V_{th}}{-(V_{DD} - V_{th})^{\alpha + 1}} \nonumber \\
+	\frac{\partial E}{\partial V_{DD}} = 2 C V_{DD} \nonumber \\
+	\frac{\partial E}{\partial V_{DD}} \bigg/ \frac{\partial t}{\partial V_{DD}} = \frac{2 V_{DD}}{K} \cdot \frac{-(V_{DD} - V_{th})^{\alpha+1}}{(\alpha - 1)V_{DD} + V_{th}} \nonumber 
+\end{align}
+
+\subsection{Energy/Delay Sensitivity to Logic Depth}
+\begin{quote}
+	What is the energy/delay sensitivity of a design to the logic depth? You can define the logic depth as a number of FO4 inverters that fit into one clock period.
+\end{quote}
+
+\section{Subthreshold Design}
+\subsection{Subthrehold Dependence on Supply Voltage}
+\begin{quote}
+	From the lecture notes, it appears that for a design operating in subthreshold, the minimum energy point of a design does not depend on the threshold voltage, and only depends on the supply. Can you explain why (very briefly)?
+\end{quote}
+
+To be brief, the leakage current becomes active switching current when operating in subthreshold. Then the leakage energy becomes dependent not only on the leakage current but the delay, which is affected in the opposite way by the threshold voltage. These two terms 'cancel out' and the threshold voltage doesn't make a difference in the minimum energy point.
+
+\subsection{Threshold Voltage Importance}
+\begin{quote}
+	If it doesn't matter for the energy consumption, why is it important to control the transistor threshold voltage in subthreshold design?
+\end{quote}
+
+Delay is very sensitive to the threshold voltage when $V_{DD}$ is near the threshold voltage. So even though energy savings don't depend on the threshold, the circuit timing and retention-ability of static circuits depend greatly on the threshold voltage.
+
+\section{Stack Forcing}
+\begin{quote}
+	What is the sensitivity in the energy-delay space of stack forcing technique, applied to every inverter in an optimally sized (for minimum delay) inverter chain of length 6? The input capacitance is 1fF, and the initial leakage is 30\% of the total energy dissipated by the inverters. Assume that the $C_{d} = C_{g} = 2$ fF$/\mu$, and a linear delay model is used. $V_{DD}$ = 1V and the stack of 2 reduces the leakage by a factor of 10.
+\end{quote}
 \newpage
 \appendix
 
