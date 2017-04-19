@@ -123,6 +123,18 @@ Delay is very sensitive to the threshold voltage when $V_{DD}$ is near the thres
 \begin{quote}
 	What is the sensitivity in the energy-delay space of stack forcing technique, applied to every inverter in an optimally sized (for minimum delay) inverter chain of length 6? The input capacitance is 1fF, and the initial leakage is 30\% of the total energy dissipated by the inverters. Assume that the $C_{d} = C_{g} = 2$ fF$/\mu$, and a linear delay model is used. $V_{DD}$ = 1V and the stack of 2 reduces the leakage by a factor of 10.
 \end{quote}
+
+Taking the original 6 inverter chain, we want to find its delay and energy consumption. The fanout of each inverter ought to be equal to minimize delay, and we can simply assume a fanout of 4 for each inverter (although this would be process dependent and based on $\gamma$; we assume $\gamma = 1$ in this problem just to make calculations easy). We also assume that the PMOS mobility is half that of the NMOS.
+
+The minimally sized inverter is to have 1fF of input capacitance so it stands that the NMOS is 1/6 $\mu$ and the PMOS is 2/6 $\mu$ in width.
+
+\begin{align}
+	t_{inv,minimal} &= \ln(2) R \text{ 1 fF} \nonumber \\
+	t_{inv,FO4} &= t_{inv,minimal} (\gamma + f) = t_{inv,minimal} \cdot 5 = \ln(2) R \text{ 5 fF} \nonumber \\
+	t_{path} &= 6 \cdot t_{inv,FO4} = \ln(2) R \text{ 30 fF} \nonumber \\
+	E_{path,dyn} &= C_{total} V_{DD}^2 = (1 + \prod_{x=1}^{5}4^x + 4096) 1^2 = (1 + 2728 + 4096) = 6825 \text{ fJ} \nonumber \\
+	E_{path,leak} &= E_{path,dyn} \cdot 0.7 = \nonumber
+\end{align}
 \newpage
 \appendix
 
