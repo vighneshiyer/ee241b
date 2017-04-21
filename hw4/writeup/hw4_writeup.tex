@@ -132,17 +132,31 @@ The minimally sized inverter is to have 1fF of input capacitance so it stands th
 	t_{inv,minimal} &= \ln(2) R \text{ 1 fF} \nonumber \\
 	t_{inv,FO4} &= t_{inv,minimal} (\gamma + f) = t_{inv,minimal} \cdot 5 = \ln(2) R \text{ 5 fF} \nonumber \\
 	t_{path} &= 6 \cdot t_{inv,FO4} = \ln(2) R \text{ 30 fF} \nonumber \\
-	E_{path,dyn} &= C_{total} V_{DD}^2 = (1 + \prod_{x=1}^{5}4^x + 4096) 1^2 = (1 + 2728 + 4096) = 6825 \text{ fJ} \nonumber \\
+	E_{path,dyn} &= C_{total} V_{DD}^2 = (1 + \sum_{x=1}^{5}2 \cdot 4^x + 4096) 1^2 = (1 + 2728 + 4096) = 6825 \text{ fJ} \nonumber \\
 	E_{path,leak} &= E_{path,dyn} \cdot \frac{0.3}{0.7} = 2925 \text{ fJ}\nonumber \\
-	E_{path,total} = 9570 \text{ fJ} \nonumber
+	E_{path,total} &= 9570 \text{ fJ} \nonumber
 \end{align}
 
 Now we assume that stack forcing is on and that every inverter is made up of 2 stacked NMOSs and 2 stacked PMOSs with their gates tied together as usual. We also assume that the widths of the NMOS and PMOS transistors are cut in half to maintain the same input capacitance and fanout. This results in an effective switching resistance that is 4x greater than the un-stacked inverter due to the halving of widths and the stacking (assuming linear delay model). The self-loading capacitance of each inverter goes down by 2x assuming we neglect the stack node capacitance.
 
 \begin{align}
-	t_{inv,minimal} &= \ln(2) 4 R \text{ 0.5 fF} \nonumber \\
-	t_{inv,FO4} 
+	%t_{inv,minimal} &= \ln(2) 4 R \text{ 0.5 fF} \nonumber \\
+	t_{inv,FO4} &= \ln(2) 4R \text{ 4.5 fF} \nonumber \\
+	t_{path} &= 6 \cdot \ln(2) 4R \text{ 4.5 fF} \nonumber \\
+	E_{path,dyn} &= (.5 + \sum_{x=1}^{5}(4^x + 4^x/2) + 4096) 1^2 = 6142.5 \text{ fJ} \nonumber \\
+	E_{path,leak} &= E_{path,leak,orig} / 10 = 292.5 \text{ fJ} \nonumber \\
+	E_{path,total} &= 6435 \text{ fJ} \nonumber
 \end{align}
+
+We can now calculate the sensitivity:
+
+\begin{align}
+	\frac{\partial E}{\partial \text{stack}} \bigg/ \frac{\partial t}{\partial \text{stack}} = \frac{\Delta E}{\Delta t} &= \frac{9570 - 6435 \text{ fJ}}{\ln(2) R \text{ 30 fF} - \ln(2) R \text{ 108 fF}} \nonumber \\
+	&= \frac{3135 \text{ fJ}}{-R \cdot 54 \text{ fF}} \nonumber
+\end{align}
+
+where $R$ can be approximated through simulating the switching current characteristic of an inverter.
+
 \newpage
 \appendix
 
