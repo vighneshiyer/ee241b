@@ -80,7 +80,7 @@ Performing calculations, and assuming $\gamma = 1$ for a modern process, we get 
 	Using the alpha-power law model, derive the analytical expression for the energy/delay sensitivity of a design to scaling of supply voltage. Evaluate this expression at the nominal supply voltage, using the results from Homework 1 ($K = 0.001, \alpha = 1.5, V_{th} = 0.45 \text{V for NMOS}$)
 \end{quote}
 
-We can model the switching NMOS transistor as a current source charging its self-capacitance and load capacitance which we lump together as $C$.
+We can model the switching NMOS transistor as a current source (dis)charging its self-capacitance and load capacitance which we lump together as $C$.
 
 \begin{align}
 	I_D &= K (V_{GS} - V_{th})^\alpha \propto t_{delay} \nonumber \\
@@ -91,7 +91,7 @@ We can model the switching NMOS transistor as a current source charging its self
 	E_{gate} &= C V_{DD}^2 \nonumber
 \end{align}
 
-To get sensitivities to $V_{DD}$ take an integral with respect to $V_{DD}$.
+To get sensitivities to $V_{DD}$ take derivatives with respect to $V_{DD}$.
 
 \begin{align}
 	\frac{\partial t}{\partial V_{DD}} = K C \frac{(\alpha - 1)V_{DD} + V_{th}}{-(V_{DD} - V_{th})^{\alpha + 1}} \nonumber \\
@@ -99,10 +99,34 @@ To get sensitivities to $V_{DD}$ take an integral with respect to $V_{DD}$.
 	\frac{\partial E}{\partial V_{DD}} \bigg/ \frac{\partial t}{\partial V_{DD}} = \frac{2 V_{DD}}{K} \cdot \frac{-(V_{DD} - V_{th})^{\alpha+1}}{(\alpha - 1)V_{DD} + V_{th}} \nonumber 
 \end{align}
 
+In this calculation we don't factor leakage energy into the gate's energy since we are concerned with energy vs delay tradeoffs, which involve switching energy.
+
 \subsection{Energy/Delay Sensitivity to Logic Depth}
 \begin{quote}
 	What is the energy/delay sensitivity of a design to the logic depth? You can define the logic depth as a number of FO4 inverters that fit into one clock period.
 \end{quote}
+
+Lets say that there are $N$ inverter stages in a logic path. Then, the delay is linearly proportional to $N$ because the fanout of each stage is fixed and each inverter is sized to have the same pull-up/pull-down strength as the minimally sized inverter.
+
+\begin{align}
+	t_{delay,path} \propto N \cdot t_{delay} = \frac{V_{DD} K C N}{(V_{DD} - V_{th})^\alpha} \nonumber 
+\end{align}
+
+However, the energy is dependent on the total capacitance of each inverter along the path:
+
+\begin{align}
+	E_{path} = V_{DD}^2 \cdot (C + \sum_{x = 1}^{N}(C \cdot 4^x)) = V_{DD}^2 (C + \frac{4}{3} C (4^N - 1)) \nonumber
+\end{align}
+
+Taking derivatives wrt $N$:
+
+\begin{align*}
+	\frac{\partial t_{delay,path}}{\partial N} = \frac{V_{DD} K C}{(V_{DD} - V_{th})^\alpha} \\
+	\frac{\partial E_{path}}{\partial N} = \frac{1}{3} V_{DD}^2 \cdot C \cdot 4^{N+1} \ln(4) \\
+	\frac{\partial E_{path}}{\partial N} \bigg/ \frac{\partial t_{delay,path}}{\partial N} = \frac{V_{DD} 4^{N+1} \ln(4) (V_{DD} - V_{th})^\alpha}{3K}
+\end{align*}
+
+So it can be concluded that the energy is much more sensitive to changes in the logic depth than the delay as would be expected.
 
 \section{Subthreshold Design}
 \subsection{Subthrehold Dependence on Supply Voltage}
