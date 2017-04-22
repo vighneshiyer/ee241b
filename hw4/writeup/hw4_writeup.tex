@@ -73,6 +73,23 @@ Performing calculations, and assuming $\gamma = 1$ for a modern process, we get 
 	There are three nearly identical critical paths in the circuit, one consisting of 20 FO4 inverters, one consisting of all NAND2s and one consisting of all NOR2s. Simulate tracking of the replica from part a) from the nominal down to 0.5V with 50 mV steps.
 \end{quote}
 
+I performed a SPICE simulation with 4 logic paths (replica, inverter chain, NAND2 chain, NOR2 chain). I created the inverter chain with 50 FO4 inverters to 'match' the delay of 20 FO4 inverters to avoid having to upsize every inverter along the chain. The NAND2 and NOR2 chains were created with 33 and 11 gates respectively to match the delay of the inverter chain (the number of gates was determined from simulation). The replica was designed exactly as described in part a).
+
+I wrote a Python script to generate the SPICE netlist to simulate. It is attached in the appendix. The results are:
+
+\begin{figure}[H]
+	\centerline{\includegraphics[width=\textwidth]{images/replica_tracking.png}}
+\end{figure}
+
+It can be seen that at the nominal supply voltage all 3 logic paths start at around the same place and the replica overestimates their delay to keep the timing constraints met. However as voltage scales down, the NOR and inverter chain is tracked at least to a proportional constant, but the NAND chain deviates non-linearly. In all cases, at low voltages, the replica fails to accurately estimate the actual delays and timing failure can happen.
+
+\subsection{Replica Redesign}
+\begin{quote}
+	How would you design the replica to accurately track these critical paths across the supply voltage range?
+\end{quote}
+
+We could design a configurable delay replica which could have different circuits multiplexed in at lower voltages. Based on the supply voltage, the delay chain would involve a different set of gates that would better track the increased delay that would result. For instance at lower voltages, a replica delay line that was based on a chain of NAND2 gates would provide additional safety margin for timing.
+
 \section{Power-performance Tradeoffs}
 
 \subsection{Energy/Delay Sensitivity}
